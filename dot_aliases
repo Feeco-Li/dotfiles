@@ -1117,26 +1117,32 @@ youtubeplayliststartfrom() {
 #     Playlist/etc. → ~/Music/Playlist Name/01 - Title.mp3
 mp3() {
     local url="$1"
-    [[ -z "$url" ]] && { echo "Usage: mp3 <youtube-url>"; return 1; }
+    if [[ -z "$url" ]]; then
+        url=$(xsel --clipboard --output 2>/dev/null || xclip -selection clipboard -o 2>/dev/null)
+    fi
+    if [[ -z "$url" ]]; then
+        IFS= read -r -p "Enter YouTube URL: " url
+    fi
+    [[ -z "$url" ]] && return 1
 
     cd "$HOME/Music" || return 1
 
-    # Fast playlist detection (--flat-playlist fetches metadata only, no download)
-    local count
-    count=$(yt-dlp --flat-playlist --no-warnings --print "%(id)s" "$url" 2>/dev/null | wc -l)
-
+    # Only treat as playlist if the URL is explicitly a playlist (not a video with a list param)
     local output_tmpl
-    if (( count > 1 )); then
+    if [[ "$url" == *"playlist?list="* ]]; then
         output_tmpl="$HOME/Music/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s"
     else
         output_tmpl="$HOME/Music/%(title)s.%(ext)s"
     fi
 
     # Download silently in background
-    yt-dlp -x --audio-format mp3 --add-metadata --embed-thumbnail \
-        -o "$output_tmpl" "$url" >/dev/null 2>&1 &
+    local playlist_flag="--no-playlist"
+    [[ "$url" == *"playlist?list="* ]] && playlist_flag="--yes-playlist"
 
-    mpv --no-video "$url"
+    yt-dlp -x --audio-format mp3 --add-metadata --embed-thumbnail \
+        $playlist_flag -o "$output_tmpl" "$url" >/dev/null 2>&1 &
+
+    mpv --no-video --ytdl-path=yt-dlp "$url"
 }
 
 

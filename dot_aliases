@@ -1103,18 +1103,21 @@ rust() {
 #  MEDIA & YOUTUBE
 #=======================================================================
 # Aliases for downloading media and playing audio.
-alias youtubesubtitle='youtube-dl --sub-lang en --convert-subs srt --write-sub'
-alias mp3='mpv --no-video '
-alias youtube='yt-dlp -o "%(title)s.%(ext)s"'
-alias youtubechannelrelease='yt-dlp -x --audio-format mp3 -o "%(uploader)s/[%(upload_date>%Y)s] %(album,playlist_title)s/%(track_number,playlist_index)02d - %(title)s.%(ext)s" --add-metadata --embed-thumbnail --yes-playlist '
-alias youtubeplayliststartfrom='_ytplv() { yt-dlp -o "%(uploader)s/[%(upload_date>%Y)s] %(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s" --add-metadata --embed-thumbnail --write-info-json --yes-playlist --playlist-start "$1" "$2"; }; _ytplv'
+alias youtubesubtitle='yt-dlp --sub-lang en --convert-subs srt --write-sub --skip-download'
+alias youtube='yt-dlp --no-playlist -o "%(title)s.%(ext)s"'
+alias youtubechannelrelease='yt-dlp -x --audio-format mp3 -c --write-info-json -o "%(uploader)s/[%(upload_date>%Y)s] %(album,playlist_title)s/%(track_number,playlist_index)02d - %(title)s.%(ext)s" --add-metadata --embed-thumbnail --yes-playlist '
+youtubeplayliststartfrom() {
+    yt-dlp -o "%(uploader)s/[%(upload_date>%Y)s] %(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s" \
+        --add-metadata --embed-thumbnail --write-info-json --yes-playlist \
+        --playlist-start "$1" "$2"
+}
 
-# youtubedownloadmp3: play a YouTube video/playlist as audio in mpv, and download it to ~/Music.
+# mp3: play a YouTube video/playlist as audio in mpv, and download it to ~/Music.
 #     Single video  → ~/Music/Title.mp3
 #     Playlist/etc. → ~/Music/Playlist Name/01 - Title.mp3
-youtubedownloadmp3() {
+mp3() {
     local url="$1"
-    [[ -z "$url" ]] && { echo "Usage: youtubedownloadmp3 <youtube-url>"; return 1; }
+    [[ -z "$url" ]] && { echo "Usage: mp3 <youtube-url>"; return 1; }
 
     cd "$HOME/Music" || return 1
 

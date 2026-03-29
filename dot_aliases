@@ -179,7 +179,8 @@ repos() {
 alias desktop='cd /home/feeco/Desktop && yazi'
 alias video='cd /home/feeco/Videos && yazi'
 alias picture='cd /home/feeco/Pictures && yazi'
-alias music='yt '
+alias music='cd /home/feeco/Music && yazi'
+
 
 
 #=======================================================================
@@ -1104,10 +1105,37 @@ rust() {
 # Aliases for downloading media and playing audio.
 alias youtubesubtitle='youtube-dl --sub-lang en --convert-subs srt --write-sub'
 alias mp3='mpv --no-video '
-alias youtubedownloadmp3='youtube -xiwc --audio-format mp3 '
 alias youtube='yt-dlp -o "%(title)s.%(ext)s"'
 alias youtubechannelrelease='yt-dlp -x --audio-format mp3 -o "%(uploader)s/[%(upload_date>%Y)s] %(album,playlist_title)s/%(track_number,playlist_index)02d - %(title)s.%(ext)s" --add-metadata --embed-thumbnail --yes-playlist '
 alias youtubeplayliststartfrom='_ytplv() { yt-dlp -o "%(uploader)s/[%(upload_date>%Y)s] %(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s" --add-metadata --embed-thumbnail --write-info-json --yes-playlist --playlist-start "$1" "$2"; }; _ytplv'
+
+# youtubedownloadmp3: play a YouTube video/playlist as audio in mpv, and download it to ~/Music.
+#     Single video  → ~/Music/Title.mp3
+#     Playlist/etc. → ~/Music/Playlist Name/01 - Title.mp3
+youtubedownloadmp3() {
+    local url="$1"
+    [[ -z "$url" ]] && { echo "Usage: youtubedownloadmp3 <youtube-url>"; return 1; }
+
+    cd "$HOME/Music" || return 1
+
+    # Fast playlist detection (--flat-playlist fetches metadata only, no download)
+    local count
+    count=$(yt-dlp --flat-playlist --no-warnings --print "%(id)s" "$url" 2>/dev/null | wc -l)
+
+    local output_tmpl
+    if (( count > 1 )); then
+        output_tmpl="$HOME/Music/%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s"
+    else
+        output_tmpl="$HOME/Music/%(title)s.%(ext)s"
+    fi
+
+    # Download silently in background
+    yt-dlp -x --audio-format mp3 --add-metadata --embed-thumbnail \
+        -o "$output_tmpl" "$url" >/dev/null 2>&1 &
+
+    mpv --no-video "$url"
+}
+
 
 
 #=======================================================================

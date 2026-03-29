@@ -1112,6 +1112,54 @@ youtubeplayliststartfrom() {
         --playlist-start "$1" "$2"
 }
 
+mp3() {
+    local url="$1"
+
+    # & in YouTube URLs is a bash metacharacter — the shell splits the URL before
+    # the function sees it. Prompt with read so the user can paste without quotes.
+    if [ -z "$url" ]; then
+        read -r -p "▶ URL: " url
+        [ -z "$url" ] && return 1
+    fi
+    local music_dir="$HOME/Music"
+    mkdir -p "$music_dir"
+    cd "$music_dir" || return
+
+    # Real playlists (list=PL...) → subfolder + all tracks.
+    # YouTube Mix/Radio (list=RD..., start_radio=1) → single video only.
+    local output_tmpl dl_flags=()
+    if [[ "$url" == *"list=PL"* ]]; then
+        output_tmpl="%(playlist_title)s/%(playlist_index)02d - %(title)s.%(ext)s"
+    else
+        output_tmpl="%(title)s.%(ext)s"
+        dl_flags=(--no-playlist)
+    fi
+
+    # Download to file in the background
+    yt-dlp -x --audio-format mp3 "${dl_flags[@]}" -o "$music_dir/$output_tmpl" "$url" >/dev/null 2>&1 &
+    disown
+
+    # Stream via a named FIFO so yt-dlp runs as a tracked background process.
+    # When mpv exits (q), we kill yt-dlp immediately instead of waiting for it to drain.
+    # Reading from a FIFO path (not stdin) also means mpv's stdin stays as the terminal,
+    # so --no-config + no window gives clean keyboard control without --input-terminal hacks.
+    local fifo
+    fifo=$(mktemp -u /tmp/mp3_XXXXXX)
+    mkfifo "$fifo"
+
+    yt-dlp -f bestaudio "${dl_flags[@]}" -o - "$url" > "$fifo" 2>/dev/null &
+    local ytdlp_pid=$!
+
+    mpv --no-config \
+        --input-conf="$HOME/.config/mpv/input.conf" \
+        --no-video \
+        --input-terminal=yes \
+        "$fifo"
+
+    kill "$ytdlp_pid" 2>/dev/null
+    wait "$ytdlp_pid" 2>/dev/null
+    rm -f "$fifo"
+}
 
 #=======================================================================
 #  DOTFILES MANAGEMENT

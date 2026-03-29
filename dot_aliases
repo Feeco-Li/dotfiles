@@ -1112,7 +1112,7 @@ youtubeplayliststartfrom() {
         --playlist-start "$1" "$2"
 }
 
-mp3() {
+musicplay() {
     local url="$1"
 
     # & in YouTube URLs is a bash metacharacter — the shell splits the URL before

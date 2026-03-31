@@ -1027,7 +1027,7 @@ function updatePrismaSchema(){
 # Interactive rustup doc browser — fuzzy searches all ~2000 topics from local docs.
 # Note: shadows the rustdoc compiler binary (rarely called directly; cargo doc wraps it).
 # Rename to e.g. 'rdoc' if you need the real rustdoc in your PATH.
-doc() {
+rust() {
     local docs
     docs=$(dirname "$(rustup doc --path 2>/dev/null)" 2>/dev/null)
     if [[ -z "$docs" || ! -d "$docs/std" ]]; then
@@ -1100,7 +1100,7 @@ doc() {
 
 # Fuzzy-search all crates in the current Cargo project's generated docs.
 # Run `cargo doc` first if target/doc doesn't exist yet.
-rustdep() {
+doc() {
     local root
     root=$(cargo locate-project 2>/dev/null | grep -o '"root":"[^"]*"' | sed 's|"root":"||;s|"||g')
     if [[ -z "$root" ]]; then

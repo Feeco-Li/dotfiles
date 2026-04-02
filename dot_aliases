@@ -1111,9 +1111,23 @@ doc() {
     local doc_dir
     doc_dir="$(dirname "$root")/target/doc"
 
+    # If not found, walk up to the workspace root
     if [[ ! -d "$doc_dir" ]]; then
-        echo "Docs not found. Run: cargo doc"
-        return 1
+        local workspace_root
+        workspace_root=$(cargo metadata --no-deps --format-version 1 2>/dev/null | grep -o '"workspace_root":"[^"]*"' | sed 's|"workspace_root":"||;s|"||g')
+        if [[ -n "$workspace_root" ]]; then
+            doc_dir="$workspace_root/target/doc"
+        fi
+    fi
+
+    if [[ ! -d "$doc_dir" ]]; then
+        echo "Docs not found. Running cargo doc..."
+        cargo doc || return 1
+        # re-derive after build (workspace root may now exist)
+        doc_dir="$(dirname "$root")/target/doc"
+        if [[ ! -d "$doc_dir" && -n "$workspace_root" ]]; then
+            doc_dir="$workspace_root/target/doc"
+        fi
     fi
 
     local selected

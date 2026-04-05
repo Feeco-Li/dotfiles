@@ -1177,7 +1177,7 @@ musicplay() {
     fi
 
     # Download to file in the background
-    yt-dlp -x --audio-format mp3 --audio-quality 0 "${dl_flags[@]}" -o "$music_dir/$output_tmpl" "$url" >/dev/null 2>&1 &
+    yt-dlp -x --audio-format best --audio-quality 0 "${dl_flags[@]}" -o "$music_dir/$output_tmpl" "$url" >/dev/null 2>&1 &
     disown
 
     # Stream via a named FIFO so yt-dlp runs as a tracked background process.

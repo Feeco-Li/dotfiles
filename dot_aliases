@@ -1316,6 +1316,55 @@ burnLinuxUSB(){
 
 
 #=======================================================================
+#  DOCKER
+#=======================================================================
+POSTGRES_CONTAINER="postgres_dev"
+POSTGRES_USER="devuser"
+POSTGRES_PASSWORD="devpass"
+POSTGRES_DB="devdb"
+POSTGRES_PORT="5432"
+
+startPostgres() {
+    if docker ps --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER}$"; then
+        echo "already running"
+        return 0
+    fi
+
+    if docker ps -a --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER}$"; then
+        docker start "$POSTGRES_CONTAINER" > /dev/null
+    else
+        docker run -d \
+            --name "$POSTGRES_CONTAINER" \
+            -e POSTGRES_USER="$POSTGRES_USER" \
+            -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+            -e POSTGRES_DB="$POSTGRES_DB" \
+            -p "${POSTGRES_PORT}:5432" \
+            postgres:latest > /dev/null
+    fi
+
+    echo "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}"
+}
+
+stopPostgres() {
+    if docker ps --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER}$"; then
+        docker stop "$POSTGRES_CONTAINER" > /dev/null
+        echo "postgres stopped"
+    else
+        echo "postgres is not running"
+    fi
+}
+
+openPostgres() {
+    if ! docker ps --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER}$"; then
+        echo "postgres is not running — start it first with: startPostgres"
+        return 1
+    fi
+    pkill -f "pgweb" 2>/dev/null; sleep 0.5
+    ~/go/bin/pgweb --url="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable" --listen=8081 --lock-session
+}
+
+
+#=======================================================================
 #  YAZI FILE MANAGER
 #=======================================================================
 source ~/.config/yazi/yazi.sh

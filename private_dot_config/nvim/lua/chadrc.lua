@@ -16,6 +16,8 @@ M.base46 = {
     -- Changes color of comments when Treesitter is active, only in this approach, .tsx file comments color will take effect as well, otherwise, .tsx file comment stay the black instead of cyan
     ["@comment"] = { fg = "#00ffff" },
     Search = { bg = "#ffff00" },
+    TbBufOn = { fg = "#ffff00" },
+    TbBufOff = { fg = "#ffffff" },
   },
 }
 

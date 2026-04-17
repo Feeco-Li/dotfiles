@@ -14,6 +14,9 @@ export HISTFILESIZE=2000
 export EDITOR=nvim
 export VISUAL=nvim
 
+# ATAC (terminal API client)
+export ATAC_KEY_BINDINGS="$HOME/.config/atac/vim_key_bindings.toml"
+
 # Fuzzy finder
 export FZF_DEFAULT_COMMAND='fdfind --type f --hidden --follow'
 

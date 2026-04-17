@@ -365,6 +365,7 @@ install_uv vimiv
 install_uv ty                     
 install_uv ruff                     
 install_uv yt-dlp
+install_uv posting
 
 # Install cargo (rust package manager)
 if command_exists cargo; then

@@ -18,7 +18,7 @@
 #=======================================================================
 # Temporary aliases and launchers for specific applications.
 alias t3='npm create t3-app@latest'
-alias e='neomutt'
+alias e='aerc'
 alias disableKeyboard='xinput disable 13 '
 alias enableKeyboard='xinput enable 13'
 alias enableTapOnClick='xinput set-prop "$(xinput list --name-only | grep -i Touchpad | head -1)" "libinput Tapping Enabled" 1'

@@ -1,0 +1,47 @@
+# aerc orange styleset
+
+*.selected.bg = 208
+*.selected.fg = 232
+*.selected.bold = true
+
+statusline_*.fg = 232
+statusline_*.bg = 208
+
+border.fg = 208
+title.bg = 208
+title.fg = 232
+title.bold = true
+
+header.fg = 208
+header.bold = true
+
+msglist_unread.bold = true
+msglist_unread.fg = 214
+msglist_deleted.dim = true
+msglist_marked.bg = 202
+msglist_marked.fg = 232
+msglist_pill.bg = 208
+msglist_pill.fg = 232
+
+part_mimetype.fg = 208
+
+selector_focused.bold = true
+selector_focused.bg = 208
+selector_focused.fg = 232
+
+completion_pill.bg = 208
+completion_pill.fg = 232
+completion_description.dim = true
+
+[viewer]
+url.underline = true
+url.fg = 214
+header.bold = true
+header.fg = 208
+signature.dim = true
+quote_1.fg = 208
+quote_2.fg = 214
+quote_3.fg = 202
+quote_3.dim = true
+quote_4.fg = 166
+quote_4.dim = true

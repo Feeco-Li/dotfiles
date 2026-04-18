@@ -48,7 +48,7 @@ install_snap() {
         echo -e "${GREEN}✓${NC} $package is already installed"
     else
         echo -e "${YELLOW}→${NC} Installing $package via snap..."
-        sudo snap install $flags "$package" --classic
+        sudo snap install $flags "$package"
     fi
 }
 
@@ -362,7 +362,6 @@ install_uv vimiv
 install_uv ty                     
 install_uv ruff                     
 install_uv yt-dlp
-install_uv posting
 
 # Install cargo (rust package manager)
 if command_exists cargo; then
@@ -390,10 +389,10 @@ install_cargo cargo-lambda
 install_cargo cargo-audit
 
 # Claude code Installation for Debian
-print_header "Docker"
+print_header "Claude Code"
 if command_exists claude; then
-    DOCKER_VERSION=$(claude --version)
-    echo -e "${GREEN}✓${NC} Claude is already installed: $DOCKER_VERSION"
+    CLAUDE_VERSION=$(claude --version)
+    echo -e "${GREEN}✓${NC} Claude is already installed: $CLAUDE_VERSION"
 else
     echo -e "${YELLOW}→${NC} Installing Claude..."
     curl -fsSL https://claude.ai/install.sh | bash
@@ -403,6 +402,15 @@ fi
 
 # Install go
 install_snap go
+
+# resterm
+print_header "resterm"
+if command_exists resterm; then
+    echo -e "${GREEN}✓${NC} resterm is already installed"
+else
+    echo -e "${YELLOW}→${NC} Installing resterm..."
+    go install github.com/unkn0wn-root/resterm@latest
+fi
 # Cleanup
 cleanup_system
 

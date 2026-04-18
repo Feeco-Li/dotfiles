@@ -37,3 +37,4 @@ command -v xset >/dev/null 2>&1 && xset r rate 250 40
 if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
     tmux attach \; select-pane -t 0 2>/dev/null || tmux new-session
 fi
+export PATH=$PATH:$HOME/.local/bin

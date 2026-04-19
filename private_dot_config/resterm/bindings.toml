@@ -1,0 +1,2 @@
+[bindings]
+quit_app = ["ctrl+q", "ctrl+d", "q"]

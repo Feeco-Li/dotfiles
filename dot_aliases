@@ -18,7 +18,6 @@
 #=======================================================================
 # Temporary aliases and launchers for specific applications.
 alias t3='npm create t3-app@latest'
-alias e='aerc'
 alias disableKeyboard='xinput disable 13 '
 alias enableKeyboard='xinput enable 13'
 alias enableTapOnClick='xinput set-prop "$(xinput list --name-only | grep -i Touchpad | head -1)" "libinput Tapping Enabled" 1'
@@ -32,6 +31,8 @@ alias v='nvim'
 alias vv='nvim .'
 alias cc='claude --chrome'
 alias r='yazi'
+alias e='aerc'
+alias api='resterm'
 alias f='tmux a' 
 alias c='clear'
 alias h='cd $HOME && clear'

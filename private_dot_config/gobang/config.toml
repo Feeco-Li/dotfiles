@@ -1,0 +1,8 @@
+[[conn]]
+name = "testdb"
+user = "devuser"
+password = "devpass"
+host = "localhost"
+port = 5432
+database = "devdb"
+type = "postgres" # Corrected name

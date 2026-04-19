@@ -387,6 +387,7 @@ install_cargo cargo-update
 install_cargo cargo-make
 install_cargo cargo-lambda
 install_cargo cargo-audit
+install_cargo rusty-man
 
 # Claude code Installation for Debian
 print_header "Claude Code"

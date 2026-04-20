@@ -410,7 +410,7 @@ if command_exists resterm; then
     echo -e "${GREEN}✓${NC} resterm is already installed"
 else
     echo -e "${YELLOW}→${NC} Installing resterm..."
-    go install github.com/unkn0wn-root/resterm@latest
+    go install github.com/unkn0wn-root/resterm/cmd/resterm@latest
 fi
 # Cleanup
 cleanup_system

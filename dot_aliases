@@ -1138,7 +1138,7 @@ doc() {
 
     [[ -z "$selected" ]] && return 0
 
-    xdg-open "$doc_dir/$selected/index.html" 2>/dev/null
+    rusty-man --viewer tui --source "$doc_dir" "$selected"
 }
 
 

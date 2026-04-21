@@ -439,9 +439,6 @@ EOF
 }
 
 
-# merge all pdf files in current folder
-alias mergepdfs='pdftk $(printf "%s\n" *.pdf | sort -V) cat output merged_output.pdf'
-
 #=======================================================================
 #  PACKAGE MANAGEMENT & SYSTEM UPDATES
 #=======================================================================

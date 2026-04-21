@@ -208,9 +208,9 @@ install_apt tealdeer
 install_apt fastfetch
 install_apt picom
 install_apt evremap
-install_apt pdftk
 install_apt expect
-# email neomut
+
+# email aerc
 install_apt aerc
 # remove unused debian utilities
 sudo apt purge -y installation-report

@@ -1,0 +1,61 @@
+# ── Display ──────────────────────────────────────────────────────────────────
+tabstop                 4
+indent_incr             1
+fold_line               0       # don't fold plain text lines
+show_lnum               0       # no line numbers cluttering the view
+show_srch_str           1       # show search string while typing
+decode_url              1       # show %20 as space in status bar
+display_link            1       # show hovered link URL in status bar
+display_link_number     0       # don't prefix every link with [n]
+display_lineinfo        0       # no current-line counter in status bar
+label_topline           1       # jump to top of screen when following anchors
+nextpage_topline        0       # keep position when paging
+graphic_char            1       # use box-drawing chars for table borders
+display_borders         1       # always render table borders
+ignore_null_img_alt     1       # show filename for images with no ALT text
+pseudo_inlines          1       # show [IMG] for inline images
+
+# ── Colors ───────────────────────────────────────────────────────────────────
+color                   1
+high-intensity          1       # bright/bold variants of colors
+bg_color                black
+basic_color             white
+anchor_color            yellow
+active_style            1       # highlight the link under cursor
+active_color            cyan
+visited_anchor          1
+visited_color           green
+image_color             magenta
+form_color              red
+mark_color              yellow
+
+# ── Mouse ─────────────────────────────────────────────────────────────────────
+use_mouse               1
+reverse_mouse           0
+
+# ── Search ───────────────────────────────────────────────────────────────────
+wrap_search             1
+ignorecase_search       1
+
+# ── Navigation ───────────────────────────────────────────────────────────────
+vi_prec_num             1       # allow 5j, 10SPACE etc.
+emacs_like_lineedit     1       # C-a/e/k/u/w in URL bar
+
+# ── Tabs & buffers ───────────────────────────────────────────────────────────
+open_tab_blank          1       # open _blank links in a new tab
+open_tab_dl_list        1       # show download list in a tab
+confirm_qq              0       # q quits immediately
+
+# ── History ──────────────────────────────────────────────────────────────────
+use_history             1
+save_hist               1
+history                 500
+
+# ── Network ──────────────────────────────────────────────────────────────────
+use_cookie              1
+show_cookie             0
+no_cache                0
+
+# ── External programs ────────────────────────────────────────────────────────
+editor                  nvim
+extbrowser              xdg-open %s

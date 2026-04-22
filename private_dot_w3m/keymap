@@ -1,0 +1,7 @@
+keymap j COMMAND "MOVE_DOWN ; CENTER_V"
+keymap k COMMAND "MOVE_UP ; CENTER_V"
+keymap J NEXT_PAGE
+keymap K PREV_PAGE
+keymap DEL BACK
+keymap b PREV_WORD
+keymap w NEXT_WORD

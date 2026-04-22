@@ -1101,41 +1101,35 @@ rust() {
 # Run `cargo doc` first if target/doc doesn't exist yet.
 doc() {
     local root
-    root=$(cargo locate-project 2>/dev/null | grep -o '"root":"[^"]*"' | sed 's|"root":"||;s|"||g')
+    root=$(cargo locate-project --message-format plain 2>/dev/null)
     if [[ -z "$root" ]]; then
-        echo "Not inside a Cargo project."
+        echo "This command only works inside a Cargo project."
         return 1
     fi
 
+    cargo doc 2>&1 || return 1
+
     local doc_dir
     doc_dir="$(dirname "$root")/target/doc"
-
-    # If not found, walk up to the workspace root
     if [[ ! -d "$doc_dir" ]]; then
         local workspace_root
-        workspace_root=$(cargo metadata --no-deps --format-version 1 2>/dev/null | grep -o '"workspace_root":"[^"]*"' | sed 's|"workspace_root":"||;s|"||g')
-        if [[ -n "$workspace_root" ]]; then
-            doc_dir="$workspace_root/target/doc"
-        fi
-    fi
-
-    if [[ ! -d "$doc_dir" ]]; then
-        echo "Docs not found. Running cargo doc..."
-        cargo doc || return 1
-        # re-derive after build (workspace root may now exist)
-        doc_dir="$(dirname "$root")/target/doc"
-        if [[ ! -d "$doc_dir" && -n "$workspace_root" ]]; then
-            doc_dir="$workspace_root/target/doc"
-        fi
+        workspace_root=$(cargo metadata --no-deps --format-version 1 2>/dev/null \
+            | grep -o '"workspace_root":"[^"]*"' | sed 's|"workspace_root":"||;s|"||g')
+        doc_dir="$workspace_root/target/doc"
     fi
 
     local selected
     selected=$(find "$doc_dir" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | \
-        fzf --height=50% --reverse --prompt='rustdep > ')
-
+        fzf --height=50% --reverse --prompt='crate > ')
     [[ -z "$selected" ]] && return 0
 
-    rusty-man --viewer tui --source "$doc_dir" "$selected"
+    local all_html="$doc_dir/$selected/all.html"
+    if [[ ! -f "$all_html" ]]; then
+        echo "all.html not found for: $selected"
+        return 1
+    fi
+
+    w3m "$all_html"
 }
 
 

@@ -7,7 +7,7 @@ show_srch_str           1       # show search string while typing
 decode_url              1       # show %20 as space in status bar
 display_link            1       # show hovered link URL in status bar
 display_link_number     0       # don't prefix every link with [n]
-display_lineinfo        0       # no current-line counter in status bar
+display_lineinfo        1       # show current line / total lines in status bar
 label_topline           1       # jump to top of screen when following anchors
 nextpage_topline        0       # keep position when paging
 graphic_char            1       # use box-drawing chars for table borders

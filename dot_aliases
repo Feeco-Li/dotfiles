@@ -1146,6 +1146,21 @@ youtubeplayliststartfrom() {
         --playlist-start "$1" "$2"
 }
 
+youtubedownloadmp3() {
+    local url="$1"
+    if [ -z "$url" ]; then
+        read -r -p "▶ URL: " url
+        [ -z "$url" ] && return 1
+    fi
+    local music_dir="$HOME/Music"
+    mkdir -p "$music_dir"
+    yt-dlp -x --audio-format mp3 --audio-quality 0 \
+        --add-metadata --embed-thumbnail \
+        --no-playlist \
+        -o "$music_dir/%(title)s.%(ext)s" \
+        "$url"
+}
+
 musicplay() {
     local url="$1"
 

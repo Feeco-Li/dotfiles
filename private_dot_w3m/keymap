@@ -155,8 +155,8 @@ keymap	Z	CENTER_H
 
 # --- Lowercase letters ---
 
-# Save the target of the current link to a file
-keymap	a	SAVE_LINK
+# Add the current page to bookmarks
+keymap	a	ADD_BOOKMARK
 # Move cursor to previous word (overrides default PREV_PAGE)
 keymap	b	PREV_WORD
 # Show the URL of the current page in the status bar
@@ -177,8 +177,8 @@ keymap	l	MOVE_RIGHT
 keymap	m	MOUSE_TOGGLE
 # Jump to the next search match
 keymap	n	SEARCH_NEXT
-# Open the options/settings menu
-keymap	o	OPTIONS
+# Open the bookmark list
+keymap	o	BOOKMARK
 # Quit w3m (prompts for confirmation)
 keymap	q	QUIT
 # Show w3m version information
@@ -212,10 +212,6 @@ keymap	M-I	SAVE_IMAGE
 keymap	M-M	EXTERN_LINK
 # Look up the word under cursor in a dictionary
 keymap	M-W	DICT_WORD_AT
-# Add the current page to bookmarks
-keymap	M-a	ADD_BOOKMARK
-# Open the bookmark list
-keymap	M-b	BOOKMARK
 # Enter a w3m command by name
 keymap	M-c	COMMAND
 # Edit the current rendered page in an external editor
@@ -262,8 +258,8 @@ keymap	LEFT	MOVE_LEFT
 keymap	M-[E	MENU
 # Open the w3m menu (alternate terminal sequence)
 keymap	M-[L	MENU
-# Move to the previous link (Shift-Tab terminal sequence)
-keymap	M-[Z	PREV_LINK
+# Switch to the previous tab (Shift-Tab terminal sequence)
+keymap	M-[Z	PREV_TAB
 # Jump to top of page (Home key)
 keymap	M-[1~	BEGIN
 # Open the w3m menu (Insert key)

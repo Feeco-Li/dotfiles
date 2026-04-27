@@ -1,7 +1,280 @@
-keymap j COMMAND "MOVE_DOWN ; CENTER_V"
-keymap k COMMAND "MOVE_UP ; CENTER_V"
-keymap J NEXT_HALF_PAGE
-keymap K PREV_HALF_PAGE
-keymap DEL BACK
-keymap b PREV_WORD
-keymap w NEXT_WORD
+# w3m keymap
+# Syntax: keymap <key> <action>
+# Ctrl  : C-, ^
+# Escape: ESC-, M-, ^[
+# Space : SPC, ' '
+# Tab   : TAB, ^i, ^I
+# Delete: DEL, ^?
+# Up    : UP, ^[[A
+# Down  : DOWN, ^[[B
+# Right : RIGHT, ^[[C
+# Left  : LEFT, ^[[D
+
+# --- Control keys ---
+
+# Set/toggle a mark at current position (for region operations)
+keymap	C-@	MARK
+# Go to the homepage defined in config
+keymap	C-_	GOTO_HOME
+# Move cursor to beginning of current line
+keymap	C-a	LINE_BEGIN
+# Move cursor one character to the left
+keymap	C-b	MOVE_LEFT
+# Move cursor to end of current line
+keymap	C-e	LINE_END
+# Move cursor one character to the right
+keymap	C-f	MOVE_RIGHT
+# Show current line number and position info
+keymap	C-g	LINE_INFO
+# Open browsing history list
+keymap	C-h	HISTORY
+# Move to the next hyperlink on the page
+keymap	TAB	NEXT_LINK
+# Follow the currently selected hyperlink (Enter)
+keymap	C-j	GOTO_LINK
+# Show cookie list
+keymap	C-k	COOKIE
+# Redraw/refresh the screen
+keymap	C-l	REDRAW
+# Follow the currently selected hyperlink (Enter alt)
+keymap	C-m	GOTO_LINK
+# Move cursor one line down
+keymap	C-n	MOVE_DOWN
+# Move cursor one line up
+keymap	C-p	MOVE_UP
+# Close the current tab
+keymap	C-q	CLOSE_TAB
+# Incremental search backwards
+keymap	C-r	ISEARCH_BACK
+# Incremental search forward
+keymap	C-s	ISEARCH
+# Open the current link in a new tab
+keymap	C-t	TAB_LINK
+# Move to the previous hyperlink on the page
+keymap	C-u	PREV_LINK
+# Scroll down one full page
+keymap	C-v	NEXT_PAGE
+# Toggle line-wrap mode on/off
+keymap	C-w	WRAP_TOGGLE
+# Suspend w3m to background (resume with fg)
+keymap	C-z	SUSPEND
+
+# --- Symbols / punctuation ---
+
+# Scroll down one full page (Space bar)
+keymap	SPC	NEXT_PAGE
+# Execute a shell command
+keymap	!	SHELL
+# Start a rectangular (region) mark selection
+keymap	\"	REG_MARK
+# Pipe current page through a shell command
+keymap	#	PIPE_SHELL
+# Move cursor to end of current line
+keymap	$	LINE_END
+# Undo the last cursor movement
+keymap	(	UNDO
+# Redo the last undone cursor movement
+keymap	)	REDO
+# Scroll down one full page (alias for Space)
+keymap	+	NEXT_PAGE
+# Shift the view left (pan the viewport)
+keymap	,	LEFT
+# Scroll up one full page
+keymap	-	PREV_PAGE
+# Shift the view right (pan the viewport)
+keymap	.	RIGHT
+# Open forward search prompt
+keymap	/	SEARCH
+# Mark URLs in the current page as links
+keymap	:	MARK_URL
+# Mark the word under the cursor
+keymap	";"	MARK_WORD
+# Shift view left by half a screen width
+keymap	<	SHIFT_LEFT
+# Show info about current page (URL, title, etc.)
+keymap	=	INFO
+# Shift view right by half a screen width
+keymap	>	SHIFT_RIGHT
+# Open backward search prompt
+keymap	?	SEARCH_BACK
+# Read output of a shell command as a new page
+keymap	@	READ_SHELL
+# Move cursor to beginning of current line (alias)
+keymap	\^	LINE_BEGIN
+# Move to the first link on the page
+keymap	[	LINK_BEGIN
+# Move to the last link on the page
+keymap	]	LINK_END
+# Switch to the previous tab
+keymap	{	PREV_TAB
+# Pipe the current buffer through a shell command
+keymap	|	PIPE_BUF
+# Switch to the next tab
+keymap	}	NEXT_TAB
+
+# --- Uppercase letters ---
+
+# Go back to the previous page in history
+keymap	B	BACK
+# Show the download list panel
+keymap	D	DOWNLOAD_LIST
+# Open current page source in external editor
+keymap	E	EDIT
+# Toggle frame rendering on/off
+keymap	F	FRAME
+# Jump to the bottom of the page
+keymap	G	END
+# Open the w3m help page
+keymap	H	HELP
+# Open the image under cursor in an external viewer
+keymap	I	VIEW_IMAGE
+# Scroll down half a page (overrides default UP/scroll-viewport-up)
+keymap	J	NEXT_HALF_PAGE
+# Scroll up half a page (overrides default DOWN/scroll-viewport-down)
+keymap	K	PREV_HALF_PAGE
+# Show list of all links on the current page
+keymap	L	LIST
+# Open current page in an external browser
+keymap	M	EXTERN
+# Jump to the previous search match
+keymap	N	SEARCH_PREV
+# Quit w3m without confirmation
+keymap	Q	EXIT
+# Reload the current page
+keymap	R	RELOAD
+# Save the rendered page text to a file
+keymap	S	SAVE_SCREEN
+# Open a new empty tab
+keymap	T	NEW_TAB
+# Open a URL prompt to navigate to a new address
+keymap	U	GOTO
+# Open a local file
+keymap	V	LOAD
+# Move cursor to the beginning of the previous word
+keymap	W	PREV_WORD
+# Center the view horizontally on the cursor
+keymap	Z	CENTER_H
+
+# --- Lowercase letters ---
+
+# Save the target of the current link to a file
+keymap	a	SAVE_LINK
+# Move cursor to previous word (overrides default PREV_PAGE)
+keymap	b	PREV_WORD
+# Show the URL of the current page in the status bar
+keymap	c	PEEK
+# Jump to the top of the page
+keymap	g	BEGIN
+# Move cursor one character left (vi-style)
+keymap	h	MOVE_LEFT
+# Show the URL of the image under cursor
+keymap	i	PEEK_IMG
+# Move down and vertically center view (overrides default MOVE_DOWN)
+keymap	j	COMMAND "MOVE_DOWN ; CENTER_V"
+# Move up and vertically center view (overrides default MOVE_UP)
+keymap	k	COMMAND "MOVE_UP ; CENTER_V"
+# Move cursor one character right (vi-style)
+keymap	l	MOVE_RIGHT
+# Toggle mouse support on/off
+keymap	m	MOUSE_TOGGLE
+# Jump to the next search match
+keymap	n	SEARCH_NEXT
+# Open the options/settings menu
+keymap	o	OPTIONS
+# Quit w3m (prompts for confirmation)
+keymap	q	QUIT
+# Show w3m version information
+keymap	r	VERSION
+# Open a menu to select from open buffers/tabs
+keymap	s	SELECT_MENU
+# Show the URL of the current link in the status bar
+keymap	u	PEEK_LINK
+# View the page source
+keymap	v	VIEW
+# Move cursor to the beginning of the next word
+keymap	w	NEXT_WORD
+# Vertically center the view on the current line
+keymap	z	CENTER_V
+
+# --- Alt/Escape (M-) keys ---
+
+# Save the current link target to a file
+keymap	M-C-j	SAVE_LINK
+# Save the current link target to a file (alt)
+keymap	M-C-m	SAVE_LINK
+# Mark from current position to the middle of screen
+keymap	M-:	MARK_MID
+# Jump to the top of the page (Emacs-style)
+keymap	M-<	BEGIN
+# Jump to the bottom of the page (Emacs-style)
+keymap	M->	END
+# Save the image under cursor to a file
+keymap	M-I	SAVE_IMAGE
+# Open the current link in an external browser
+keymap	M-M	EXTERN_LINK
+# Look up the word under cursor in a dictionary
+keymap	M-W	DICT_WORD_AT
+# Add the current page to bookmarks
+keymap	M-a	ADD_BOOKMARK
+# Open the bookmark list
+keymap	M-b	BOOKMARK
+# Enter a w3m command by name
+keymap	M-c	COMMAND
+# Edit the current rendered page in an external editor
+keymap	M-e	EDIT_SCREEN
+# Jump to a specific line number
+keymap	M-g	GOTO_LINE
+# Interactively define a new key binding
+keymap	M-k	DEFINE_KEY
+# Show link list as a menu
+keymap	M-l	LIST_MENU
+# Show a menu for navigating the move history
+keymap	M-m	MOVE_LIST_MENU
+# Jump to the next mark
+keymap	M-n	NEXT_MARK
+# Set a configuration option interactively
+keymap	M-o	SET_OPTION
+# Jump to the previous mark
+keymap	M-p	PREV_MARK
+# Save the current page to a file
+keymap	M-s	SAVE
+# Show a menu of open tabs
+keymap	M-t	TAB_MENU
+# Navigate to a URL relative to the current page
+keymap	M-u	GOTO_RELATIVE
+# Scroll up one full page (Emacs-style)
+keymap	M-v	PREV_PAGE
+# Close the current tab
+keymap	M-w	CLOSE_TAB
+
+# --- Arrow keys ---
+
+# Move cursor one line up
+keymap	UP	MOVE_UP
+# Move cursor one line down
+keymap	DOWN	MOVE_DOWN
+# Move cursor one character right
+keymap	RIGHT	MOVE_RIGHT
+# Move cursor one character left
+keymap	LEFT	MOVE_LEFT
+
+# --- Function / terminal special keys ---
+
+# Open the w3m menu (Keypad 5 / Begin key)
+keymap	M-[E	MENU
+# Open the w3m menu (alternate terminal sequence)
+keymap	M-[L	MENU
+# Move to the previous link (Shift-Tab terminal sequence)
+keymap	M-[Z	PREV_LINK
+# Jump to top of page (Home key)
+keymap	M-[1~	BEGIN
+# Open the w3m menu (Insert key)
+keymap	M-[2~	MENU
+# Jump to bottom of page (End key)
+keymap	M-[4~	END
+# Scroll up one full page (Page Up key)
+keymap	M-[5~	PREV_PAGE
+# Scroll down one full page (Page Down key)
+keymap	M-[6~	NEXT_PAGE
+# Open the w3m menu (Help key on some terminals)
+keymap	M-[28~	MENU

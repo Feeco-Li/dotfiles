@@ -30,8 +30,8 @@ keymap	C-g	LINE_INFO
 keymap	C-h	HISTORY
 # Go back to the previous page in history (Backspace key)
 keymap	DEL	BACK
-# Move to the next hyperlink on the page
-keymap	TAB	NEXT_LINK
+# Switch to the next tab
+keymap	TAB	NEXT_TAB
 # Follow the currently selected hyperlink (Enter)
 keymap	C-j	GOTO_LINK
 # Show cookie list
@@ -126,10 +126,10 @@ keymap	G	END
 keymap	H	HELP
 # Open the image under cursor in an external viewer
 keymap	I	VIEW_IMAGE
-# Scroll down half a page (overrides default UP/scroll-viewport-up)
-keymap	J	NEXT_HALF_PAGE
-# Scroll up half a page (overrides default DOWN/scroll-viewport-down)
-keymap	K	PREV_HALF_PAGE
+# Move to the next hyperlink on the page
+keymap	J	NEXT_LINK
+# Move to the previous hyperlink on the page
+keymap	K	PREV_LINK
 # Show list of all links on the current page
 keymap	L	LIST
 # Open current page in an external browser

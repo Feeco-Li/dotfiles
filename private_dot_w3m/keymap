@@ -28,6 +28,8 @@ keymap	C-f	MOVE_RIGHT
 keymap	C-g	LINE_INFO
 # Open browsing history list
 keymap	C-h	HISTORY
+# Go back to the previous page in history (Backspace key)
+keymap	DEL	BACK
 # Move to the next hyperlink on the page
 keymap	TAB	NEXT_LINK
 # Follow the currently selected hyperlink (Enter)
@@ -48,8 +50,6 @@ keymap	C-q	CLOSE_TAB
 keymap	C-r	ISEARCH_BACK
 # Incremental search forward
 keymap	C-s	ISEARCH
-# Open the current link in a new tab
-keymap	C-t	TAB_LINK
 # Move to the previous hyperlink on the page
 keymap	C-u	PREV_LINK
 # Scroll down one full page
@@ -114,8 +114,6 @@ keymap	}	NEXT_TAB
 
 # --- Uppercase letters ---
 
-# Go back to the previous page in history
-keymap	B	BACK
 # Show the download list panel
 keymap	D	DOWNLOAD_LIST
 # Open current page source in external editor
@@ -144,8 +142,8 @@ keymap	Q	EXIT
 keymap	R	RELOAD
 # Save the rendered page text to a file
 keymap	S	SAVE_SCREEN
-# Open a new empty tab
-keymap	T	NEW_TAB
+# Open the selected link in a new tab
+keymap	t	TAB_LINK
 # Open a URL prompt to navigate to a new address
 keymap	U	GOTO
 # Open a local file

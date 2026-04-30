@@ -13,5 +13,5 @@ alias syncdotfiles='chezmoi update'
 alias cddotfiles='cd ~/.local/share/chezmoi && ranger'
 alias adddotfiles='chezmoi add'
 alias removedotfiles='chezmoi destroy'
-alias cs='chezmoi status'
+alias diffdotfiles='chezmoi status'
 ```

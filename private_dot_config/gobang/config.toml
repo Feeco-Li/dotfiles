@@ -6,3 +6,12 @@ host = "localhost"
 port = 5432
 database = "devdb"
 type = "postgres" # Corrected name
+
+[[conn]]
+name = "full-stack-fastapi-template"
+user = "postgres"
+password = "changethis"
+host = "localhost"
+port = 5432
+database = "app"
+type = "postgres"

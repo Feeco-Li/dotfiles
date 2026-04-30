@@ -1232,7 +1232,7 @@ function syncdotfiles {
 alias cddotfiles='chezmoi cd && echo "current path" && pwd'
 alias adddotfiles='chezmoi add'
 alias removedotfiles='chezmoi destroy'
-alias cs='chezmoi status'
+alias diffdotfiles='chezmoi status'
 
 
 #=======================================================================

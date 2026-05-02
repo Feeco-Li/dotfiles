@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import pygments\")",
+      "Bash(python3 -c \"import rich; print\\('rich', rich.__version__\\)\")",
+      "Bash(python3 -m rich --version)",
+      "Read(//home/feeco/.cargo/bin/**)",
+      "Read(//home/feeco/.local/bin/**)",
+      "Bash(~/.cargo/bin/tv --version)",
+      "Bash(~/.cargo/bin/tv --help)",
+      "Bash(env)",
+      "Bash(fzf --version)",
+      "Bash(fzf --help)",
+      "Bash(csvlens *)",
+      "Bash(vd --version)",
+      "Bash(vd --help)"
+    ]
+  }
+}

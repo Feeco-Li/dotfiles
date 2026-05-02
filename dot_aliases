@@ -1384,11 +1384,31 @@ unset __f
 # cs: fuzzy-pick and display a cheatsheet
 unalias cs 2>/dev/null
 cs() {
-    local name
-    name=$(ls ~/.config/cheatsheets/*.sh 2>/dev/null \
-        | xargs -I{} basename {} .sh \
-        | fzf --height=40% --reverse --prompt='cheatsheet> ')
-    [[ -n "$name" ]] && "cheatsheet_${name}"
+    local dir=~/.config/cheatsheets
+    local selected type name
+
+    selected=$(
+        {
+            ls "$dir"/*.html 2>/dev/null \
+                | xargs -I{} basename {} .html \
+                | sed 's/^/[html] /'
+            for f in "$dir"/*.sh; do
+                [[ -f "$f" ]] || continue
+                local base; base=$(basename "$f" .sh)
+                [[ ! -f "$dir/$base.html" ]] && echo "[sh]   $base"
+            done
+        } | sort | fzf --height=40% --reverse --prompt='cheatsheet> '
+    )
+
+    [[ -z "$selected" ]] && return
+    type=$(awk '{print $1}' <<< "$selected")
+    name=$(awk '{print $2}' <<< "$selected")
+
+    if [[ "$type" == "[html]" ]]; then
+        w3m "$dir/$name.html"
+    else
+        "cheatsheet_${name}"
+    fi
 }
 
 

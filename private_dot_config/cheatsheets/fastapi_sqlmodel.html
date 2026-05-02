@@ -5,61 +5,61 @@
 
 <table width="100%" border="0" cellpadding="2" cellspacing="0">
 
-<tr><th colspan="2"><input type="text" readonly value="model_definition"></th></tr>
-<tr><td><a href="#">class Hero(SQLModel, table=True):</a></td><td>define a DB-mapped table model</td></tr>
-<tr><td><a href="#">class Hero(SQLModel):</a></td><td>data/response model - no table</td></tr>
-<tr><td><a href="#">name: str</a></td><td>required non-nullable column</td></tr>
-<tr><td><a href="#">age: int | None = None</a></td><td>optional nullable int column</td></tr>
-<tr><td><a href="#">name: str = Field(index=True)</a></td><td>add a DB index on this column</td></tr>
-<tr><td><a href="#">Field(foreign_key="team.id")</a></td><td>FK column pointing to team</td></tr>
-<tr><td><a href="#">Relationship(back_populates=...)</a></td><td>bidirectional FK relationship</td></tr>
-<tr><td><a href="#">class HeroRead(Hero):</a></td><td>output schema (subset of fields)</td></tr>
+<tr><th colspan="3"><input type="text" readonly value="model_definition"></th></tr>
+<tr><td><a href="#">class Hero(SQLModel, table=True):</a></td><td>define a DB-mapped table model</td><td>class User(SQLModel, table=True): id: int = Field(primary_key=True)</td></tr>
+<tr><td><a href="#">class Hero(SQLModel):</a></td><td>data/response model - no table</td><td>class UserRead(SQLModel): id: int; name: str</td></tr>
+<tr><td><a href="#">name: str</a></td><td>required non-nullable column</td><td>username: str</td></tr>
+<tr><td><a href="#">age: int | None = None</a></td><td>optional nullable int column</td><td>score: int | None = None</td></tr>
+<tr><td><a href="#">name: str = Field(index=True)</a></td><td>add a DB index on this column</td><td>email: str = Field(index=True)</td></tr>
+<tr><td><a href="#">Field(foreign_key="team.id")</a></td><td>FK column pointing to team</td><td>team_id: int = Field(foreign_key="team.id")</td></tr>
+<tr><td><a href="#">Relationship(back_populates=...)</a></td><td>bidirectional FK relationship</td><td>team: Team = Relationship(back_populates="heroes")</td></tr>
+<tr><td><a href="#">class HeroRead(Hero):</a></td><td>output schema (subset of fields)</td><td>class UserOut(User): pass</td></tr>
 
-<tr><th colspan="2"><input type="text" readonly value="engine_and_session"></th></tr>
-<tr><td><a href="#">engine = create_engine(url)</a></td><td>create database engine</td></tr>
-<tr><td><a href="#">create_engine(url, echo=True)</a></td><td>log all SQL statements</td></tr>
-<tr><td><a href="#">SQLModel.metadata.create_all(eng)</a></td><td>create all defined tables</td></tr>
-<tr><td><a href="#">with Session(engine) as session:</a></td><td>open a managed session block</td></tr>
-<tr><td><a href="#">def get_session():</a></td><td>FastAPI session dependency fn</td></tr>
-<tr><td><a href="#">&nbsp;&nbsp;yield Session(engine)</a></td><td>dep fn body (see above)</td></tr>
-<tr><td><a href="#">@app.on_event("startup")</a></td><td>create tables at app startup</td></tr>
-<tr><td><a href="#">async def lifespan(app: FastAPI):</a></td><td>new-style lifespan handler</td></tr>
+<tr><th colspan="3"><input type="text" readonly value="engine_and_session"></th></tr>
+<tr><td><a href="#">engine = create_engine(url)</a></td><td>create database engine</td><td>engine = create_engine("sqlite:///db.sqlite3")</td></tr>
+<tr><td><a href="#">create_engine(url, echo=True)</a></td><td>log all SQL statements</td><td>engine = create_engine(url, echo=True)</td></tr>
+<tr><td><a href="#">SQLModel.metadata.create_all(eng)</a></td><td>create all defined tables</td><td>SQLModel.metadata.create_all(engine)</td></tr>
+<tr><td><a href="#">with Session(engine) as session:</a></td><td>open a managed session block</td><td>with Session(engine) as session: session.add(hero)</td></tr>
+<tr><td><a href="#">def get_session():</a></td><td>FastAPI session dependency fn</td><td>def get_session(): yield Session(engine)</td></tr>
+<tr><td><a href="#">&nbsp;&nbsp;yield Session(engine)</a></td><td>dep fn body (see above)</td><td>session: Session = Depends(get_session)</td></tr>
+<tr><td><a href="#">@app.on_event("startup")</a></td><td>create tables at app startup</td><td>@app.on_event("startup") def on_start(): create_all(engine)</td></tr>
+<tr><td><a href="#">async def lifespan(app: FastAPI):</a></td><td>new-style lifespan handler</td><td>@asynccontextmanager async def lifespan(app): create_all(engine); yield</td></tr>
 
-<tr><th colspan="2"><input type="text" readonly value="crud_and_queries"></th></tr>
-<tr><td><a href="#">session.add(hero)</a></td><td>stage object for insert/update</td></tr>
-<tr><td><a href="#">session.commit()</a></td><td>persist staged changes to DB</td></tr>
-<tr><td><a href="#">session.refresh(hero)</a></td><td>sync object state from DB</td></tr>
-<tr><td><a href="#">session.get(Hero, hero_id)</a></td><td>fetch single row by primary key</td></tr>
-<tr><td><a href="#">session.delete(hero)</a></td><td>stage object for deletion</td></tr>
-<tr><td><a href="#">session.exec(select(Hero)).all()</a></td><td>fetch all rows as a list</td></tr>
-<tr><td><a href="#">select(Hero).where(Hero.age &gt; 18)</a></td><td>filter query by condition</td></tr>
-<tr><td><a href="#">select(Hero).offset(n).limit(m)</a></td><td>paginate: skip n, return m rows</td></tr>
+<tr><th colspan="3"><input type="text" readonly value="crud_and_queries"></th></tr>
+<tr><td><a href="#">session.add(hero)</a></td><td>stage object for insert/update</td><td>session.add(User(name="alice"))</td></tr>
+<tr><td><a href="#">session.commit()</a></td><td>persist staged changes to DB</td><td>session.add(user); session.commit()</td></tr>
+<tr><td><a href="#">session.refresh(hero)</a></td><td>sync object state from DB</td><td>session.commit(); session.refresh(user)</td></tr>
+<tr><td><a href="#">session.get(Hero, hero_id)</a></td><td>fetch single row by primary key</td><td>user = session.get(User, 42)</td></tr>
+<tr><td><a href="#">session.delete(hero)</a></td><td>stage object for deletion</td><td>session.delete(user); session.commit()</td></tr>
+<tr><td><a href="#">session.exec(select(Hero)).all()</a></td><td>fetch all rows as a list</td><td>users = session.exec(select(User)).all()</td></tr>
+<tr><td><a href="#">select(Hero).where(Hero.age &gt; 18)</a></td><td>filter query by condition</td><td>select(User).where(User.active == True)</td></tr>
+<tr><td><a href="#">select(Hero).offset(n).limit(m)</a></td><td>paginate: skip n, return m rows</td><td>select(User).offset(20).limit(10)</td></tr>
 
-<tr><th colspan="2"><input type="text" readonly value="field_options"></th></tr>
-<tr><td><a href="#">primary_key=True</a></td><td>marks column as table primary key</td></tr>
-<tr><td><a href="#">foreign_key="user.id"</a></td><td>links to another table's column</td></tr>
-<tr><td><a href="#">index=True</a></td><td>creates DB index for fast lookups</td></tr>
-<tr><td><a href="#">unique=True</a></td><td>enforces no duplicate col values</td></tr>
-<tr><td><a href="#">nullable=False</a></td><td>override NULL inference from type</td></tr>
-<tr><td><a href="#">sa_column=Column(...)</a></td><td>pass raw SQLAlchemy Column object</td></tr>
-<tr><td><a href="#">sa_column_args=[...]</a></td><td>extra SQLAlchemy positional args</td></tr>
-<tr><td><a href="#">sa_column_kwargs={...}</a></td><td>extra SQLAlchemy keyword args</td></tr>
-<tr><td><a href="#">default=None</a></td><td>value used when none is provided</td></tr>
-<tr><td><a href="#">default_factory=list</a></td><td>callable to generate a default</td></tr>
-<tr><td><a href="#">alias="userName"</a></td><td>JSON key name (differs from field)</td></tr>
-<tr><td><a href="#">title="User Name"</a></td><td>field title for OpenAPI docs</td></tr>
-<tr><td><a href="#">description="Hero age"</a></td><td>field description for API docs</td></tr>
-<tr><td><a href="#">exclude=True</a></td><td>hide from .dict() / JSON output</td></tr>
-<tr><td><a href="#">validate_default=True</a></td><td>also validate the default value</td></tr>
-<tr><td><a href="#">repr=False</a></td><td>exclude field from __repr__</td></tr>
-<tr><td><a href="#">min_length=1</a></td><td>minimum string length</td></tr>
-<tr><td><a href="#">max_length=100</a></td><td>maximum string length</td></tr>
-<tr><td><a href="#">pattern="^[A-Z]+$"</a></td><td>regex pattern validation</td></tr>
-<tr><td><a href="#">gt=0 / ge=0</a></td><td>value must be &gt; n or &gt;= n</td></tr>
-<tr><td><a href="#">lt=100 / le=100</a></td><td>value must be &lt; n or &lt;= n</td></tr>
-<tr><td><a href="#">multiple_of=5</a></td><td>value must be a multiple of n</td></tr>
-<tr><td><a href="#">max_digits=10</a></td><td>max total digits (Decimal)</td></tr>
-<tr><td><a href="#">decimal_places=2</a></td><td>max decimal places (Decimal)</td></tr>
+<tr><th colspan="3"><input type="text" readonly value="field_options"></th></tr>
+<tr><td><a href="#">primary_key=True</a></td><td>marks column as table primary key</td><td>id: int = Field(primary_key=True)</td></tr>
+<tr><td><a href="#">foreign_key="user.id"</a></td><td>links to another table's column</td><td>user_id: int = Field(foreign_key="user.id")</td></tr>
+<tr><td><a href="#">index=True</a></td><td>creates DB index for fast lookups</td><td>email: str = Field(index=True)</td></tr>
+<tr><td><a href="#">unique=True</a></td><td>enforces no duplicate col values</td><td>username: str = Field(unique=True)</td></tr>
+<tr><td><a href="#">nullable=False</a></td><td>override NULL inference from type</td><td>name: str | None = Field(nullable=False)</td></tr>
+<tr><td><a href="#">sa_column=Column(...)</a></td><td>pass raw SQLAlchemy Column object</td><td>data: dict = Field(sa_column=Column(JSON))</td></tr>
+<tr><td><a href="#">sa_column_args=[...]</a></td><td>extra SQLAlchemy positional args</td><td>Field(sa_column_args=[CheckConstraint("age &gt; 0")])</td></tr>
+<tr><td><a href="#">sa_column_kwargs={...}</a></td><td>extra SQLAlchemy keyword args</td><td>Field(sa_column_kwargs={"server_default": "0"})</td></tr>
+<tr><td><a href="#">default=None</a></td><td>value used when none is provided</td><td>score: int = Field(default=0)</td></tr>
+<tr><td><a href="#">default_factory=list</a></td><td>callable to generate a default</td><td>tags: list = Field(default_factory=list)</td></tr>
+<tr><td><a href="#">alias="userName"</a></td><td>JSON key name (differs from field)</td><td>user_name: str = Field(alias="userName")</td></tr>
+<tr><td><a href="#">title="User Name"</a></td><td>field title for OpenAPI docs</td><td>name: str = Field(title="Full Name")</td></tr>
+<tr><td><a href="#">description="Hero age"</a></td><td>field description for API docs</td><td>age: int = Field(description="Age in years")</td></tr>
+<tr><td><a href="#">exclude=True</a></td><td>hide from .dict() / JSON output</td><td>password: str = Field(exclude=True)</td></tr>
+<tr><td><a href="#">validate_default=True</a></td><td>also validate the default value</td><td>score: int = Field(default=0, validate_default=True)</td></tr>
+<tr><td><a href="#">repr=False</a></td><td>exclude field from __repr__</td><td>secret: str = Field(repr=False)</td></tr>
+<tr><td><a href="#">min_length=1</a></td><td>minimum string length</td><td>name: str = Field(min_length=1)</td></tr>
+<tr><td><a href="#">max_length=100</a></td><td>maximum string length</td><td>bio: str = Field(max_length=500)</td></tr>
+<tr><td><a href="#">pattern="^[A-Z]+$"</a></td><td>regex pattern validation</td><td>code: str = Field(pattern="^[A-Z]{3}$")</td></tr>
+<tr><td><a href="#">gt=0 / ge=0</a></td><td>value must be &gt; n or &gt;= n</td><td>age: int = Field(ge=0)</td></tr>
+<tr><td><a href="#">lt=100 / le=100</a></td><td>value must be &lt; n or &lt;= n</td><td>score: float = Field(ge=0, le=100)</td></tr>
+<tr><td><a href="#">multiple_of=5</a></td><td>value must be a multiple of n</td><td>qty: int = Field(multiple_of=5)</td></tr>
+<tr><td><a href="#">max_digits=10</a></td><td>max total digits (Decimal)</td><td>price: Decimal = Field(max_digits=10)</td></tr>
+<tr><td><a href="#">decimal_places=2</a></td><td>max decimal places (Decimal)</td><td>price: Decimal = Field(decimal_places=2)</td></tr>
 
 </table>
 </body>

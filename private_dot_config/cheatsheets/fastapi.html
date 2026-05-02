@@ -5,35 +5,35 @@
 
 <table width="100%" border="0" cellpadding="2" cellspacing="0">
 
-<tr><th colspan="2"><input type="text" readonly value="development"></th></tr>
-<tr><td><a href="#">fastapi dev</a></td><td>auto-detect app, start dev server</td></tr>
-<tr><td><a href="#">fastapi dev main.py</a></td><td>dev server with explicit file</td></tr>
-<tr><td><a href="#">fastapi dev --host 0.0.0.0</a></td><td>expose on all interfaces</td></tr>
-<tr><td><a href="#">fastapi dev --port 8080</a></td><td>serve on custom port</td></tr>
-<tr><td><a href="#">fastapi dev --no-reload</a></td><td>disable auto-reload</td></tr>
-<tr><td><a href="#">fastapi dev --reload-dir src</a></td><td>watch specific directory</td></tr>
-<tr><td><a href="#">fastapi dev --app myapp</a></td><td>specify app variable name</td></tr>
-<tr><td><a href="#">fastapi dev -e main:app</a></td><td>specify full import string</td></tr>
+<tr><th colspan="3"><input type="text" readonly value="development"></th></tr>
+<tr><td><a href="#">fastapi dev</a></td><td>auto-detect app, start dev server</td><td>fastapi dev</td></tr>
+<tr><td><a href="#">fastapi dev main.py</a></td><td>dev server with explicit file</td><td>fastapi dev main.py</td></tr>
+<tr><td><a href="#">fastapi dev --host 0.0.0.0</a></td><td>expose on all interfaces</td><td>fastapi dev --host 0.0.0.0 main.py</td></tr>
+<tr><td><a href="#">fastapi dev --port 8080</a></td><td>serve on custom port</td><td>fastapi dev --port 8080 main.py</td></tr>
+<tr><td><a href="#">fastapi dev --no-reload</a></td><td>disable auto-reload</td><td>fastapi dev --no-reload main.py</td></tr>
+<tr><td><a href="#">fastapi dev --reload-dir src</a></td><td>watch specific directory</td><td>fastapi dev --reload-dir src main.py</td></tr>
+<tr><td><a href="#">fastapi dev --app myapp</a></td><td>specify app variable name</td><td>fastapi dev --app api main.py</td></tr>
+<tr><td><a href="#">fastapi dev -e main:app</a></td><td>specify full import string</td><td>fastapi dev -e app.main:app</td></tr>
 
-<tr><th colspan="2"><input type="text" readonly value="production"></th></tr>
-<tr><td><a href="#">fastapi run</a></td><td>auto-detect app, production mode</td></tr>
-<tr><td><a href="#">fastapi run main.py</a></td><td>production with explicit file</td></tr>
-<tr><td><a href="#">fastapi run --host 127.0.0.1</a></td><td>bind to localhost only</td></tr>
-<tr><td><a href="#">fastapi run --port 80</a></td><td>serve on port 80</td></tr>
-<tr><td><a href="#">fastapi run --workers 4</a></td><td>multiple worker processes</td></tr>
-<tr><td><a href="#">fastapi run --root-path /api</a></td><td>set path prefix for proxied apps</td></tr>
-<tr><td><a href="#">fastapi run --no-proxy-headers</a></td><td>disable proxy header trust</td></tr>
-<tr><td><a href="#">fastapi run -e main:app</a></td><td>specify full import string</td></tr>
+<tr><th colspan="3"><input type="text" readonly value="production"></th></tr>
+<tr><td><a href="#">fastapi run</a></td><td>auto-detect app, production mode</td><td>fastapi run</td></tr>
+<tr><td><a href="#">fastapi run main.py</a></td><td>production with explicit file</td><td>fastapi run main.py</td></tr>
+<tr><td><a href="#">fastapi run --host 127.0.0.1</a></td><td>bind to localhost only</td><td>fastapi run --host 127.0.0.1 main.py</td></tr>
+<tr><td><a href="#">fastapi run --port 80</a></td><td>serve on port 80</td><td>fastapi run --port 80 main.py</td></tr>
+<tr><td><a href="#">fastapi run --workers 4</a></td><td>multiple worker processes</td><td>fastapi run --workers 4 main.py</td></tr>
+<tr><td><a href="#">fastapi run --root-path /api</a></td><td>set path prefix for proxied apps</td><td>fastapi run --root-path /api main.py</td></tr>
+<tr><td><a href="#">fastapi run --no-proxy-headers</a></td><td>disable proxy header trust</td><td>fastapi run --no-proxy-headers main.py</td></tr>
+<tr><td><a href="#">fastapi run -e main:app</a></td><td>specify full import string</td><td>fastapi run -e app.main:app</td></tr>
 
-<tr><th colspan="2"><input type="text" readonly value="cloud_and_patterns"></th></tr>
-<tr><td><a href="#">fastapi login</a></td><td>login to FastAPI Cloud</td></tr>
-<tr><td><a href="#">fastapi deploy</a></td><td>deploy to FastAPI Cloud</td></tr>
-<tr><td><a href="#">fastapi cloud</a></td><td>manage cloud deployments</td></tr>
-<tr><td><a href="#">fastapi --version</a></td><td>show CLI version</td></tr>
-<tr><td><a href="#">uv run fastapi dev</a></td><td>dev server in project env</td></tr>
-<tr><td><a href="#">uv run fastapi run main.py</a></td><td>production server via uv</td></tr>
-<tr><td><a href="#">fastapi dev app/</a></td><td>detect app in package directory</td></tr>
-<tr><td><a href="#">fastapi dev --forwarded-allow-ips *</a></td><td>trust all proxy IPs</td></tr>
+<tr><th colspan="3"><input type="text" readonly value="cloud_and_patterns"></th></tr>
+<tr><td><a href="#">fastapi login</a></td><td>login to FastAPI Cloud</td><td>fastapi login</td></tr>
+<tr><td><a href="#">fastapi deploy</a></td><td>deploy to FastAPI Cloud</td><td>fastapi deploy</td></tr>
+<tr><td><a href="#">fastapi cloud</a></td><td>manage cloud deployments</td><td>fastapi cloud</td></tr>
+<tr><td><a href="#">fastapi --version</a></td><td>show CLI version</td><td>fastapi --version</td></tr>
+<tr><td><a href="#">uv run fastapi dev</a></td><td>dev server in project env</td><td>uv run fastapi dev main.py</td></tr>
+<tr><td><a href="#">uv run fastapi run main.py</a></td><td>production server via uv</td><td>uv run fastapi run main.py</td></tr>
+<tr><td><a href="#">fastapi dev app/</a></td><td>detect app in package directory</td><td>fastapi dev app/</td></tr>
+<tr><td><a href="#">fastapi dev --forwarded-allow-ips *</a></td><td>trust all proxy IPs</td><td>fastapi dev --forwarded-allow-ips * main.py</td></tr>
 
 </table>
 </body>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head><title>Docker Cheatsheet</title></head>
+<body>
+
+<table width="100%" border="0" cellpadding="2" cellspacing="0">
+
+<tr><th colspan="2"><input type="text" readonly value="images_and_registry"></th></tr>
+<tr><td><a href="#">docker pull &lt;img&gt;</a></td><td>pull image from registry</td></tr>
+<tr><td><a href="#">docker images</a></td><td>list local images</td></tr>
+<tr><td><a href="#">docker rmi &lt;img&gt;</a></td><td>remove a local image</td></tr>
+<tr><td><a href="#">docker build -t &lt;n&gt; .</a></td><td>build image from Dockerfile</td></tr>
+<tr><td><a href="#">docker build --no-cache .</a></td><td>rebuild ignoring layer cache</td></tr>
+<tr><td><a href="#">docker tag &lt;img&gt; &lt;tag&gt;</a></td><td>tag image with new name:tag</td></tr>
+<tr><td><a href="#">docker push &lt;name:tag&gt;</a></td><td>push image to registry</td></tr>
+<tr><td><a href="#">docker login</a></td><td>authenticate with registry</td></tr>
+<tr><td><a href="#">docker search &lt;term&gt;</a></td><td>search images on Docker Hub</td></tr>
+<tr><td><a href="#">docker history &lt;img&gt;</a></td><td>show image layer history</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="containers"></th></tr>
+<tr><td><a href="#">docker run -d --name &lt;n&gt; &lt;img&gt;</a></td><td>run named container detached</td></tr>
+<tr><td><a href="#">docker run -it &lt;img&gt; bash</a></td><td>interactive shell in container</td></tr>
+<tr><td><a href="#">docker run --rm &lt;img&gt;</a></td><td>auto-remove container on exit</td></tr>
+<tr><td><a href="#">docker run -p 8080:80 &lt;img&gt;</a></td><td>map host to container port</td></tr>
+<tr><td><a href="#">docker run -v /h:/c &lt;img&gt;</a></td><td>mount host path as volume</td></tr>
+<tr><td><a href="#">docker run --env-file .env &lt;img&gt;</a></td><td>load env vars from file</td></tr>
+<tr><td><a href="#">docker ps / ps -a</a></td><td>list running / all containers</td></tr>
+<tr><td><a href="#">docker start/stop/restart &lt;c&gt;</a></td><td>start stop or restart container</td></tr>
+<tr><td><a href="#">docker kill / rm -f &lt;c&gt;</a></td><td>force stop or remove container</td></tr>
+<tr><td><a href="#">docker cp &lt;c&gt;:/path ./</a></td><td>copy files from container</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="exec_and_logs"></th></tr>
+<tr><td><a href="#">docker exec -it &lt;c&gt; bash</a></td><td>open shell in running container</td></tr>
+<tr><td><a href="#">docker exec &lt;c&gt; &lt;cmd&gt;</a></td><td>run command in container</td></tr>
+<tr><td><a href="#">docker logs -f &lt;c&gt;</a></td><td>stream container logs live</td></tr>
+<tr><td><a href="#">docker logs --tail 100 &lt;c&gt;</a></td><td>show last 100 log lines</td></tr>
+<tr><td><a href="#">docker logs --since 1h &lt;c&gt;</a></td><td>show logs since last hour</td></tr>
+<tr><td><a href="#">docker inspect &lt;c&gt;</a></td><td>show full container metadata</td></tr>
+<tr><td><a href="#">docker stats</a></td><td>live CPU and memory usage</td></tr>
+<tr><td><a href="#">docker top &lt;c&gt;</a></td><td>list processes in container</td></tr>
+<tr><td><a href="#">docker port &lt;c&gt;</a></td><td>show port mappings</td></tr>
+<tr><td><a href="#">docker info</a></td><td>show Docker system info</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="volumes_and_networks"></th></tr>
+<tr><td><a href="#">docker volume ls</a></td><td>list all volumes</td></tr>
+<tr><td><a href="#">docker volume create &lt;n&gt;</a></td><td>create a named volume</td></tr>
+<tr><td><a href="#">docker volume rm &lt;n&gt;</a></td><td>remove a volume</td></tr>
+<tr><td><a href="#">docker volume prune</a></td><td>remove all unused volumes</td></tr>
+<tr><td><a href="#">docker network ls</a></td><td>list all networks</td></tr>
+<tr><td><a href="#">docker network create &lt;n&gt;</a></td><td>create a custom network</td></tr>
+<tr><td><a href="#">docker network rm &lt;n&gt;</a></td><td>remove a network</td></tr>
+<tr><td><a href="#">docker network connect &lt;n&gt; &lt;c&gt;</a></td><td>attach container to network</td></tr>
+<tr><td><a href="#">docker network inspect &lt;n&gt;</a></td><td>show network details</td></tr>
+<tr><td><a href="#">docker network prune</a></td><td>remove unused networks</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="compose_and_cleanup"></th></tr>
+<tr><td><a href="#">docker compose up -d</a></td><td>start all services detached</td></tr>
+<tr><td><a href="#">docker compose up --build</a></td><td>rebuild and start services</td></tr>
+<tr><td><a href="#">docker compose down -v</a></td><td>stop and remove with volumes</td></tr>
+<tr><td><a href="#">docker compose stop</a></td><td>stop services keep containers</td></tr>
+<tr><td><a href="#">docker compose watch</a></td><td>hot-reload on file changes</td></tr>
+<tr><td><a href="#">docker compose restart &lt;s&gt;</a></td><td>restart a specific service</td></tr>
+<tr><td><a href="#">docker compose logs -f</a></td><td>stream logs for all services</td></tr>
+<tr><td><a href="#">docker compose exec &lt;s&gt; bash</a></td><td>shell into a running service</td></tr>
+<tr><td><a href="#">docker compose ps</a></td><td>list service container status</td></tr>
+<tr><td><a href="#">docker system prune -a</a></td><td>remove all unused resources</td></tr>
+
+</table>
+</body>
+</html>

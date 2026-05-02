@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head><title>uv Cheatsheet</title></head>
+<body>
+
+<table width="100%" border="0" cellpadding="2" cellspacing="0">
+
+<tr><th colspan="2"><input type="text" readonly value="project"></th></tr>
+<tr><td><a href="#">uv init</a></td><td>initialize new project</td></tr>
+<tr><td><a href="#">uv init --app &lt;name&gt;</a></td><td>create application project</td></tr>
+<tr><td><a href="#">uv init --lib &lt;name&gt;</a></td><td>create library project</td></tr>
+<tr><td><a href="#">uv add &lt;pkg&gt;</a></td><td>add dependency</td></tr>
+<tr><td><a href="#">uv add --dev &lt;pkg&gt;</a></td><td>add dev dependency</td></tr>
+<tr><td><a href="#">uv add --group &lt;g&gt; &lt;pkg&gt;</a></td><td>add to dependency group</td></tr>
+<tr><td><a href="#">uv remove &lt;pkg&gt;</a></td><td>remove dependency</td></tr>
+<tr><td><a href="#">uv version</a></td><td>show or update project version</td></tr>
+<tr><td><a href="#">uv audit</a></td><td>check for vulnerabilities</td></tr>
+<tr><td><a href="#">uv tree</a></td><td>show dependency tree</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="sync_lock_and_build"></th></tr>
+<tr><td><a href="#">uv sync</a></td><td>sync project dependencies</td></tr>
+<tr><td><a href="#">uv sync --frozen</a></td><td>sync without updating lock</td></tr>
+<tr><td><a href="#">uv sync --no-dev</a></td><td>sync production deps only</td></tr>
+<tr><td><a href="#">uv lock</a></td><td>update lockfile</td></tr>
+<tr><td><a href="#">uv lock --frozen</a></td><td>assert lockfile unchanged</td></tr>
+<tr><td><a href="#">uv export --format requirements-txt</a></td><td>export to requirements-txt</td></tr>
+<tr><td><a href="#">uv build</a></td><td>build source dist and wheel</td></tr>
+<tr><td><a href="#">uv publish</a></td><td>publish package to PyPI</td></tr>
+<tr><td><a href="#">uv cache clean</a></td><td>clear the download cache</td></tr>
+<tr><td><a href="#">uv self update</a></td><td>update uv to latest version</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="run"></th></tr>
+<tr><td><a href="#">uv run &lt;cmd&gt;</a></td><td>run in project environment</td></tr>
+<tr><td><a href="#">uv run python</a></td><td>launch Python interpreter</td></tr>
+<tr><td><a href="#">uv run script.py</a></td><td>execute a Python script</td></tr>
+<tr><td><a href="#">uv run -m &lt;module&gt;</a></td><td>run Python module</td></tr>
+<tr><td><a href="#">uv run --python 3.12 &lt;cmd&gt;</a></td><td>run with specific Python</td></tr>
+<tr><td><a href="#">uv run --with &lt;pkg&gt; &lt;cmd&gt;</a></td><td>run with extra package</td></tr>
+<tr><td><a href="#">uv run --frozen</a></td><td>run without updating lockfile</td></tr>
+<tr><td><a href="#">uv run --no-project &lt;cmd&gt;</a></td><td>run outside project context</td></tr>
+<tr><td><a href="#">uv run --isolated</a></td><td>run in isolated environment</td></tr>
+<tr><td><a href="#">uvx &lt;tool&gt;</a></td><td>run tool without installing</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="python_versions"></th></tr>
+<tr><td><a href="#">uv python install 3.12</a></td><td>install Python version</td></tr>
+<tr><td><a href="#">uv python install</a></td><td>install pinned version</td></tr>
+<tr><td><a href="#">uv python upgrade 3.12</a></td><td>upgrade Python version</td></tr>
+<tr><td><a href="#">uv python list</a></td><td>list available versions</td></tr>
+<tr><td><a href="#">uv python list --all-versions</a></td><td>list all installable versions</td></tr>
+<tr><td><a href="#">uv python pin 3.12</a></td><td>pin version for project</td></tr>
+<tr><td><a href="#">uv python find</a></td><td>find active Python install</td></tr>
+<tr><td><a href="#">uv python find 3.12</a></td><td>find specific version</td></tr>
+<tr><td><a href="#">uv python uninstall 3.12</a></td><td>remove Python version</td></tr>
+<tr><td><a href="#">uv python dir</a></td><td>show Python install directory</td></tr>
+
+<tr><th colspan="2"><input type="text" readonly value="venv_pip_and_tools"></th></tr>
+<tr><td><a href="#">uv venv</a></td><td>create .venv in current dir</td></tr>
+<tr><td><a href="#">uv pip install &lt;pkg&gt;</a></td><td>install package into venv</td></tr>
+<tr><td><a href="#">uv pip install -r requirements.txt</a></td><td>install from requirements file</td></tr>
+<tr><td><a href="#">uv pip install -e .</a></td><td>install in editable mode</td></tr>
+<tr><td><a href="#">uv pip uninstall &lt;pkg&gt;</a></td><td>uninstall package</td></tr>
+<tr><td><a href="#">uv pip list</a></td><td>list installed packages</td></tr>
+<tr><td><a href="#">uv pip freeze</a></td><td>output as requirements format</td></tr>
+<tr><td><a href="#">uv tool install &lt;tool&gt;</a></td><td>install CLI tool globally</td></tr>
+<tr><td><a href="#">uv tool upgrade &lt;tool&gt;</a></td><td>upgrade a global tool</td></tr>
+<tr><td><a href="#">uv tool list</a></td><td>list installed global tools</td></tr>
+
+</table>
+</body>
+</html>

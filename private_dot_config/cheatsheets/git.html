@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head><title>Git Cheatsheet</title></head>
+<body>
+
+<table width="100%" border="0" cellpadding="2" cellspacing="0">
+
+<tr><th colspan="3"><input type="text" readonly value="setup_and_init"></th></tr>
+<tr><td><a href="#">git init</a></td><td>init repo in current dir</td><td>git init</td></tr>
+<tr><td><a href="#">git init &lt;dir&gt;</a></td><td>init repo in new directory</td><td>git init myproject</td></tr>
+<tr><td><a href="#">git clone &lt;url&gt;</a></td><td>clone remote repo</td><td>git clone https://github.com/org/repo.git</td></tr>
+<tr><td><a href="#">git clone &lt;url&gt; &lt;dir&gt;</a></td><td>clone into named directory</td><td>git clone https://github.com/org/repo.git mydir</td></tr>
+<tr><td><a href="#">git config user.name &lt;n&gt;</a></td><td>set commit author name</td><td>git config user.name "Jane Doe"</td></tr>
+<tr><td><a href="#">git config user.email &lt;e&gt;</a></td><td>set commit author email</td><td>git config user.email "jane@example.com"</td></tr>
+<tr><td><a href="#">git config --global &lt;key&gt; &lt;val&gt;</a></td><td>set option globally</td><td>git config --global core.editor vim</td></tr>
+<tr><td><a href="#">git config --list</a></td><td>show all config values</td><td>git config --list</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="status_and_diff"></th></tr>
+<tr><td><a href="#">git status</a></td><td>show working tree state</td><td>git status</td></tr>
+<tr><td><a href="#">git status -s</a></td><td>short status output</td><td>git status -s</td></tr>
+<tr><td><a href="#">git diff</a></td><td>unstaged changes</td><td>git diff</td></tr>
+<tr><td><a href="#">git diff --staged</a></td><td>staged changes (vs last commit)</td><td>git diff --staged</td></tr>
+<tr><td><a href="#">git diff &lt;branch1&gt;..&lt;branch2&gt;</a></td><td>diff between two branches</td><td>git diff main..feature/login</td></tr>
+<tr><td><a href="#">git diff &lt;commit&gt; &lt;file&gt;</a></td><td>diff file vs specific commit</td><td>git diff HEAD~3 src/app.py</td></tr>
+<tr><td><a href="#">git show &lt;commit&gt;</a></td><td>show commit diff and message</td><td>git show abc1234</td></tr>
+<tr><td><a href="#">git blame &lt;file&gt;</a></td><td>show who changed each line</td><td>git blame src/app.py</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="staging_and_commit"></th></tr>
+<tr><td><a href="#">git add &lt;file&gt;</a></td><td>stage a file</td><td>git add src/app.py</td></tr>
+<tr><td><a href="#">git add .</a></td><td>stage all changes in cwd</td><td>git add .</td></tr>
+<tr><td><a href="#">git add -p</a></td><td>interactively stage hunks</td><td>git add -p</td></tr>
+<tr><td><a href="#">git reset HEAD &lt;file&gt;</a></td><td>unstage a file</td><td>git reset HEAD src/app.py</td></tr>
+<tr><td><a href="#">git commit -m &lt;msg&gt;</a></td><td>commit with inline message</td><td>git commit -m "fix: handle nil user"</td></tr>
+<tr><td><a href="#">git commit -am &lt;msg&gt;</a></td><td>stage tracked files and commit</td><td>git commit -am "update readme"</td></tr>
+<tr><td><a href="#">git commit --amend</a></td><td>edit last commit message or files</td><td>git commit --amend --no-edit</td></tr>
+<tr><td><a href="#">git rm --cached &lt;file&gt;</a></td><td>untrack file (keep on disk)</td><td>git rm --cached secrets.env</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="branches"></th></tr>
+<tr><td><a href="#">git branch</a></td><td>list local branches</td><td>git branch</td></tr>
+<tr><td><a href="#">git branch -a</a></td><td>list local and remote branches</td><td>git branch -a</td></tr>
+<tr><td><a href="#">git branch &lt;n&gt;</a></td><td>create branch at HEAD</td><td>git branch feature/auth</td></tr>
+<tr><td><a href="#">git branch -d &lt;n&gt;</a></td><td>delete merged branch</td><td>git branch -d feature/auth</td></tr>
+<tr><td><a href="#">git branch -D &lt;n&gt;</a></td><td>force-delete branch</td><td>git branch -D feature/auth</td></tr>
+<tr><td><a href="#">git branch -m &lt;old&gt; &lt;new&gt;</a></td><td>rename branch</td><td>git branch -m feature/auth feature/login</td></tr>
+<tr><td><a href="#">git switch &lt;n&gt;</a></td><td>switch to branch</td><td>git switch feature/auth</td></tr>
+<tr><td><a href="#">git switch -c &lt;n&gt;</a></td><td>create and switch to new branch</td><td>git switch -c feature/auth</td></tr>
+<tr><td><a href="#">git switch -c &lt;n&gt; &lt;remote&gt;/&lt;n&gt;</a></td><td>track remote branch locally</td><td>git switch -c fix origin/fix</td></tr>
+<tr><td><a href="#">git checkout &lt;commit&gt; -- &lt;file&gt;</a></td><td>restore file from specific commit</td><td>git checkout HEAD~2 -- src/app.py</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="merge_and_rebase"></th></tr>
+<tr><td><a href="#">git merge &lt;branch&gt;</a></td><td>merge branch into current</td><td>git merge feature/auth</td></tr>
+<tr><td><a href="#">git merge --no-ff &lt;branch&gt;</a></td><td>merge with merge commit always</td><td>git merge --no-ff feature/auth</td></tr>
+<tr><td><a href="#">git merge --squash &lt;branch&gt;</a></td><td>squash commits into staged changes</td><td>git merge --squash feature/auth</td></tr>
+<tr><td><a href="#">git merge --abort</a></td><td>abort in-progress merge</td><td>git merge --abort</td></tr>
+<tr><td><a href="#">git rebase &lt;branch&gt;</a></td><td>rebase current branch onto target</td><td>git rebase main</td></tr>
+<tr><td><a href="#">git rebase -i HEAD~&lt;n&gt;</a></td><td>interactive rebase last n commits</td><td>git rebase -i HEAD~3</td></tr>
+<tr><td><a href="#">git rebase --abort</a></td><td>abort in-progress rebase</td><td>git rebase --abort</td></tr>
+<tr><td><a href="#">git rebase --continue</a></td><td>continue after resolving conflict</td><td>git rebase --continue</td></tr>
+<tr><td><a href="#">git cherry-pick &lt;commit&gt;</a></td><td>apply a single commit here</td><td>git cherry-pick abc1234</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="remotes"></th></tr>
+<tr><td><a href="#">git remote -v</a></td><td>list remotes with URLs</td><td>git remote -v</td></tr>
+<tr><td><a href="#">git remote add &lt;n&gt; &lt;url&gt;</a></td><td>add a remote</td><td>git remote add origin git@github.com:org/repo.git</td></tr>
+<tr><td><a href="#">git remote remove &lt;n&gt;</a></td><td>remove a remote</td><td>git remote remove upstream</td></tr>
+<tr><td><a href="#">git remote set-url &lt;n&gt; &lt;url&gt;</a></td><td>change remote URL</td><td>git remote set-url origin git@github.com:org/repo.git</td></tr>
+<tr><td><a href="#">git fetch</a></td><td>download remote changes (no merge)</td><td>git fetch origin</td></tr>
+<tr><td><a href="#">git fetch --prune</a></td><td>fetch and remove stale remote refs</td><td>git fetch --prune</td></tr>
+<tr><td><a href="#">git pull</a></td><td>fetch and merge current branch</td><td>git pull origin main</td></tr>
+<tr><td><a href="#">git pull --rebase</a></td><td>fetch and rebase instead of merge</td><td>git pull --rebase origin main</td></tr>
+<tr><td><a href="#">git push &lt;remote&gt; &lt;branch&gt;</a></td><td>push branch to remote</td><td>git push origin feature/auth</td></tr>
+<tr><td><a href="#">git push -u &lt;remote&gt; &lt;branch&gt;</a></td><td>push and set upstream tracking</td><td>git push -u origin feature/auth</td></tr>
+<tr><td><a href="#">git push --delete &lt;remote&gt; &lt;n&gt;</a></td><td>delete remote branch</td><td>git push --delete origin feature/auth</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="log_and_history"></th></tr>
+<tr><td><a href="#">git log</a></td><td>show commit history</td><td>git log</td></tr>
+<tr><td><a href="#">git log --oneline</a></td><td>one line per commit</td><td>git log --oneline</td></tr>
+<tr><td><a href="#">git log --oneline --graph --all</a></td><td>ASCII branch graph all branches</td><td>git log --oneline --graph --all</td></tr>
+<tr><td><a href="#">git log -n &lt;n&gt;</a></td><td>show last n commits</td><td>git log -n 10</td></tr>
+<tr><td><a href="#">git log --author=&lt;n&gt;</a></td><td>filter by author name</td><td>git log --author="Jane"</td></tr>
+<tr><td><a href="#">git log --since=&lt;d&gt;</a></td><td>commits since date</td><td>git log --since="2 weeks ago"</td></tr>
+<tr><td><a href="#">git log -S &lt;str&gt;</a></td><td>commits that added/removed string</td><td>git log -S "def login"</td></tr>
+<tr><td><a href="#">git log -- &lt;file&gt;</a></td><td>history of a specific file</td><td>git log -- src/app.py</td></tr>
+<tr><td><a href="#">git reflog</a></td><td>show all HEAD movements</td><td>git reflog</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="undo_and_reset"></th></tr>
+<tr><td><a href="#">git restore &lt;file&gt;</a></td><td>discard unstaged changes</td><td>git restore src/app.py</td></tr>
+<tr><td><a href="#">git restore --staged &lt;file&gt;</a></td><td>unstage file (keep changes)</td><td>git restore --staged src/app.py</td></tr>
+<tr><td><a href="#">git restore .</a></td><td>discard all unstaged changes</td><td>git restore .</td></tr>
+<tr><td><a href="#">git reset --soft HEAD~&lt;n&gt;</a></td><td>undo n commits, keep staged</td><td>git reset --soft HEAD~1</td></tr>
+<tr><td><a href="#">git reset --mixed HEAD~&lt;n&gt;</a></td><td>undo n commits, keep unstaged</td><td>git reset --mixed HEAD~1</td></tr>
+<tr><td><a href="#">git reset --hard HEAD~&lt;n&gt;</a></td><td>undo n commits, discard changes</td><td>git reset --hard HEAD~1</td></tr>
+<tr><td><a href="#">git revert &lt;commit&gt;</a></td><td>new commit that undoes a commit</td><td>git revert abc1234</td></tr>
+<tr><td><a href="#">git revert --no-commit &lt;commit&gt;</a></td><td>revert changes without committing</td><td>git revert --no-commit abc1234</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="stash"></th></tr>
+<tr><td><a href="#">git stash</a></td><td>stash uncommitted changes</td><td>git stash</td></tr>
+<tr><td><a href="#">git stash push -m &lt;msg&gt;</a></td><td>stash with a label</td><td>git stash push -m "wip: auth refactor"</td></tr>
+<tr><td><a href="#">git stash list</a></td><td>list all stashes</td><td>git stash list</td></tr>
+<tr><td><a href="#">git stash pop</a></td><td>apply latest stash and remove it</td><td>git stash pop</td></tr>
+<tr><td><a href="#">git stash apply stash@{&lt;n&gt;}</a></td><td>apply specific stash (keep it)</td><td>git stash apply stash@{2}</td></tr>
+<tr><td><a href="#">git stash drop stash@{&lt;n&gt;}</a></td><td>delete a specific stash</td><td>git stash drop stash@{0}</td></tr>
+<tr><td><a href="#">git stash clear</a></td><td>remove all stashes</td><td>git stash clear</td></tr>
+<tr><td><a href="#">git stash show -p stash@{&lt;n&gt;}</a></td><td>show diff of a stash</td><td>git stash show -p stash@{0}</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="tags"></th></tr>
+<tr><td><a href="#">git tag</a></td><td>list all tags</td><td>git tag</td></tr>
+<tr><td><a href="#">git tag &lt;n&gt;</a></td><td>create lightweight tag at HEAD</td><td>git tag v1.0.0</td></tr>
+<tr><td><a href="#">git tag -a &lt;n&gt; -m &lt;msg&gt;</a></td><td>create annotated tag</td><td>git tag -a v1.0.0 -m "release v1.0.0"</td></tr>
+<tr><td><a href="#">git tag -d &lt;n&gt;</a></td><td>delete local tag</td><td>git tag -d v1.0.0</td></tr>
+<tr><td><a href="#">git push &lt;remote&gt; &lt;tag&gt;</a></td><td>push a tag to remote</td><td>git push origin v1.0.0</td></tr>
+<tr><td><a href="#">git push &lt;remote&gt; --tags</a></td><td>push all tags to remote</td><td>git push origin --tags</td></tr>
+
+<tr><th colspan="3"><input type="text" readonly value="search_and_cleanup"></th></tr>
+<tr><td><a href="#">git grep &lt;pattern&gt;</a></td><td>search working tree for pattern</td><td>git grep "def login"</td></tr>
+<tr><td><a href="#">git grep &lt;pattern&gt; &lt;commit&gt;</a></td><td>search pattern in a commit</td><td>git grep "def login" HEAD~5</td></tr>
+<tr><td><a href="#">git bisect start</a></td><td>start binary search for bug</td><td>git bisect start</td></tr>
+<tr><td><a href="#">git bisect good/bad &lt;commit&gt;</a></td><td>mark commit as good or bad</td><td>git bisect bad HEAD</td></tr>
+<tr><td><a href="#">git bisect reset</a></td><td>end bisect session</td><td>git bisect reset</td></tr>
+<tr><td><a href="#">git clean -fd</a></td><td>remove untracked files and dirs</td><td>git clean -fd</td></tr>
+<tr><td><a href="#">git clean -n</a></td><td>dry run: show what would be removed</td><td>git clean -n</td></tr>
+<tr><td><a href="#">git gc</a></td><td>clean up and compress repo</td><td>git gc --prune=now</td></tr>
+
+</table>
+</body>
+</html>

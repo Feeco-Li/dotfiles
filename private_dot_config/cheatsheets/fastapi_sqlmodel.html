@@ -21,7 +21,7 @@
 <tr><td><a href="#">SQLModel.metadata.create_all(eng)</a></td><td>create all defined tables</td><td>SQLModel.metadata.create_all(engine)</td></tr>
 <tr><td><a href="#">with Session(engine) as session:</a></td><td>open a managed session block</td><td>with Session(engine) as session: session.add(hero)</td></tr>
 <tr><td><a href="#">def get_session():</a></td><td>FastAPI session dependency fn</td><td>def get_session(): yield Session(engine)</td></tr>
-<tr><td><a href="#">&nbsp;&nbsp;yield Session(engine)</a></td><td>dep fn body (see above)</td><td>session: Session = Depends(get_session)</td></tr>
+<tr><td><a href="#">yield Session(engine)</a></td><td>dep fn body (see above)</td><td>session: Session = Depends(get_session)</td></tr>
 <tr><td><a href="#">@app.on_event("startup")</a></td><td>create tables at app startup</td><td>@app.on_event("startup") def on_start(): create_all(engine)</td></tr>
 <tr><td><a href="#">async def lifespan(app: FastAPI):</a></td><td>new-style lifespan handler</td><td>@asynccontextmanager async def lifespan(app): create_all(engine); yield</td></tr>
 

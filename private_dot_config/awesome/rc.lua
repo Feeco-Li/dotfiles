@@ -466,8 +466,8 @@ globalkeys = gears.table.join(
 	awful.key({ modkey, "Control" }, "r", awesome.restart, { description = "reload awesome", group = "awesome" }),
 	awful.key({ modkey, "Shift" }, "q", awesome.quit, { description = "quit awesome", group = "awesome" }),
 	awful.key({ modkey }, "l", function()
-		awful.spawn("slock")
-	end, { description = "lock screen", group = "awesome" }),
+		awful.spawn.with_shell("xset +dpms && slock & sleep 0.5 && xset dpms force off")
+	end, { description = "lock screen and turn off display", group = "awesome" }),
 	awful.key({ modkey }, "h", function()
 		awful.tag.incmwfact(-0.05)
 	end, { description = "decrease master width factor", group = "layout" }),

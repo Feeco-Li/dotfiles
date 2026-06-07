@@ -387,7 +387,7 @@ alias d4='xrandr --output DP-2 --brightness 1.1'
 alias l1='xrandr --output eDP --brightness 0.5'
 alias l2='xrandr --output eDP --brightness 0.8'
 alias l3='xrandr --output eDP --brightness 1'
-alias l4='xrandr --output eDP --brightness 1.5'
+alias l4='xrandr --output eDP --brightness 1.2'
 
 alias secondMonitorRotation='xrandr --output DP-1 --rotate left'
 alias volume='alsamixer'

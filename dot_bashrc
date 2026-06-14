@@ -38,3 +38,16 @@ if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
     tmux attach \; select-pane -t 0 2>/dev/null || tmux new-session
 fi
 export PATH=$PATH:$HOME/.local/bin
+
+# pnpm
+export PNPM_HOME="/home/feeco/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
+
+# Android SDK
+export ANDROID_HOME="$HOME/Android/Sdk"
+export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator"

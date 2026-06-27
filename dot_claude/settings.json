@@ -49,9 +49,10 @@
     "command": "~/.claude/statusline.sh",
     "padding": 0
   },
-  "voiceEnabled": false,
-  "theme": "dark",
   "voice": {
     "enabled": false
-  }
+  },
+  "theme": "dark",
+  "voiceEnabled": false,
+  "tui": "fullscreen"
 }

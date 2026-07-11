@@ -23,6 +23,7 @@ alias enableKeyboard='xinput enable 13'
 alias enableTapOnClick='xinput set-prop "$(xinput list --name-only | grep -i Touchpad | head -1)" "libinput Tapping Enabled" 1'
 alias disableTapOnClick='xinput set-prop "$(xinput list --name-only | grep -i Touchpad | head -1)" "libinput Tapping Enabled" 0'
 alias job='uv run job-toolkit '
+alias l="fc -s"
 
 #=======================================================================
 #  CORE SYSTEM & NAVIGATION

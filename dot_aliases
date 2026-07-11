@@ -1100,6 +1100,84 @@ rust() {
     rustup doc "$topic"
 }
 
+# Interactive Python API browser — fuzzy searches builtins, keywords, and the
+# stdlib modules most useful for LeetCode (collections, itertools, functools,
+# heapq, bisect, math, string, re, operator, typing) plus str/list/dict/set/
+# tuple methods. Pulled live from the installed interpreter's docstrings via
+# pydoc3, so no separate docs package or internet connection is needed.
+# Note: shadows the real 'pydoc' command (this system only ships 'pydoc3');
+# rename this to e.g. 'pyd' if you need the stock pydoc CLI under this name.
+pydoc() {
+    local selection
+    selection=$(
+        python3 - <<'PYEOF' |
+import inspect
+
+modules = [
+    "collections", "itertools", "functools", "heapq", "bisect",
+    "math", "string", "re", "operator", "typing",
+]
+
+seen = set()
+
+for modname in modules:
+    mod = __import__(modname)
+    if modname not in seen:
+        seen.add(modname)
+        doc = (inspect.getdoc(mod) or "").split("\n")[0]
+        print(f"{'module':<10} {modname:<30} {doc}")
+    for name, obj in inspect.getmembers(mod):
+        if name.startswith("_"):
+            continue
+        full = f"{modname}.{name}"
+        if full in seen:
+            continue
+        seen.add(full)
+        kind = "class" if inspect.isclass(obj) else "function" if inspect.isroutine(obj) else "member"
+        doc = (inspect.getdoc(obj) or "").split("\n")[0]
+        print(f"{kind:<10} {full:<30} {doc}")
+
+for typename in ("str", "list", "dict", "set", "tuple", "frozenset"):
+    t = eval(typename)
+    for name, obj in inspect.getmembers(t):
+        if name.startswith("_"):
+            continue
+        full = f"{typename}.{name}"
+        if full in seen:
+            continue
+        seen.add(full)
+        doc = (inspect.getdoc(obj) or "").split("\n")[0]
+        print(f"{'method':<10} {full:<30} {doc}")
+
+import builtins, keyword
+for kw in keyword.kwlist:
+    if kw in seen:
+        continue
+    seen.add(kw)
+    print(f"{'keyword':<10} {kw:<30}")
+
+for name in dir(builtins):
+    if name.startswith("_") or name in seen:
+        continue
+    obj = getattr(builtins, name)
+    seen.add(name)
+    kind = "class" if inspect.isclass(obj) else "function" if inspect.isroutine(obj) else "member"
+    doc = (inspect.getdoc(obj) or "").split("\n")[0]
+    print(f"{kind:<10} {name:<30} {doc}")
+PYEOF
+        fzf --height=90% --reverse \
+            --prompt='python doc > ' \
+            --header='module · class · function · method · member · keyword' \
+            --bind='tab:down,shift-tab:up'
+    )
+
+    [[ -z "$selection" ]] && return
+
+    local topic
+    topic=$(awk '{print $2}' <<< "$selection")
+    pydoc3 "$topic"
+}
+
 # Fuzzy-search all crates in the current Cargo project's generated docs.
 # Run `cargo doc` first if target/doc doesn't exist yet.
 doc() {

@@ -1168,6 +1168,74 @@ PYEOF
         fzf --height=90% --reverse \
             --prompt='python doc > ' \
             --header='module · class · function · method · member · keyword' \
+            --tiebreak=begin \
+            --color='hl:yellow,hl+:yellow' \
+            --bind='tab:down,shift-tab:up'
+    )
+
+    [[ -z "$selection" ]] && return
+
+    local topic
+    topic=$(awk '{print $2}' <<< "$selection")
+    pydoc3 "$topic"
+}
+
+# Interactive FastAPI (+ Starlette bits it re-exports) API browser — same
+# mechanism as pydoc(): live inspect.getmembers() introspection, but scoped to
+# fastapi and the submodules you actually import from day to day (security,
+# responses, testclient, middleware.cors, staticfiles, params, ...). Uses
+# whichever 'python3' is first on PATH, so activate your venv first if
+# FastAPI lives there rather than globally.
+fastapidoc() {
+    if ! python3 -c "import fastapi" 2>/dev/null; then
+        echo "fastapi not importable by 'python3'. Activate the venv that has it installed, or: pip install fastapi"
+        return 1
+    fi
+
+    local selection
+    selection=$(
+        python3 - <<'PYEOF' |
+import inspect
+
+modules = [
+    "fastapi", "fastapi.security", "fastapi.responses", "fastapi.testclient",
+    "fastapi.encoders", "fastapi.exceptions", "fastapi.middleware",
+    "fastapi.middleware.cors", "fastapi.staticfiles", "fastapi.templating",
+    "fastapi.background", "fastapi.requests", "fastapi.websockets", "fastapi.params",
+]
+
+seen = set()
+out = []
+
+for modname in modules:
+    try:
+        mod = __import__(modname, fromlist=["_"])
+    except Exception:
+        continue
+    if modname not in seen:
+        seen.add(modname)
+        doc = (inspect.getdoc(mod) or "").split("\n")[0]
+        out.append(("module", modname, doc))
+    for name, obj in inspect.getmembers(mod):
+        if name.startswith("_") or inspect.ismodule(obj):
+            continue
+        full = f"{modname}.{name}"
+        if full in seen:
+            continue
+        seen.add(full)
+        kind = "class" if inspect.isclass(obj) else "function" if inspect.isroutine(obj) else "member"
+        doc = (inspect.getdoc(obj) or "").split("\n")[0]
+        out.append((kind, full, doc))
+
+out.sort(key=lambda e: e[1])
+for kind, topic, desc in out:
+    print(f"{kind:<10} {topic:<32} {desc}")
+PYEOF
+        fzf --height=90% --reverse \
+            --prompt='fastapi doc > ' \
+            --header='module · class · function · member' \
+            --tiebreak=begin \
+            --color='hl:yellow,hl+:yellow' \
             --bind='tab:down,shift-tab:up'
     )
 
@@ -1211,6 +1279,225 @@ doc() {
     fi
 
     w3m "$all_html"
+}
+
+# Interactive Docker CLI browser — fuzzy searches every docker command and
+# subcommand (run, container ls, image build, volume prune, compose up, ...)
+# by recursively parsing `docker ... --help` output (up to 3 levels deep) live
+# from your installed Docker CLI, so it always matches your installed version.
+# Named 'ddoc' rather than 'docker' so it doesn't shadow the real docker CLI.
+ddoc() {
+    local selection
+    selection=$(
+        python3 - <<'PYEOF' |
+import re
+import subprocess
+
+MAX_DEPTH = 3
+
+
+def get_help(path):
+    proc = subprocess.run(
+        ["docker", *path, "--help"], capture_output=True, text=True, timeout=5
+    )
+    return proc.stdout
+
+
+def parse_commands(text):
+    section = None
+    for line in text.splitlines():
+        header = re.match(r"^(Common Commands|Management Commands|Swarm Commands|Commands):$", line)
+        if header:
+            section = header.group(1)
+            continue
+        if section is None:
+            continue
+        if not line.startswith(" "):
+            section = None
+            continue
+        m = re.match(r"^ {2}(\S+)\s{2,}(.*)$", line)
+        if m:
+            name, desc = m.group(1), m.group(2).strip()
+            is_group = section in ("Management Commands", "Swarm Commands")
+            yield name.rstrip("*"), desc, is_group
+
+
+def walk(path, depth, seen_paths, out):
+    if depth > MAX_DEPTH:
+        return
+    key = tuple(path)
+    if key in seen_paths:
+        return
+    seen_paths.add(key)
+
+    for name, desc, is_group in parse_commands(get_help(path)):
+        topic = path + [name]
+        kind = "group" if is_group else "command"
+        out.append((kind, "/".join(topic), desc))
+        if is_group:
+            walk(topic, depth + 1, seen_paths, out)
+
+
+out = []
+walk([], 0, set(), out)
+out.sort(key=lambda e: e[1])
+for kind, topic, desc in out:
+    print(f"{kind:<10} {topic:<28} {desc}")
+PYEOF
+        fzf --height=90% --reverse \
+            --prompt='docker doc > ' \
+            --header='group · command  (path segments joined by /)' \
+            --tiebreak=begin \
+            --color='hl:yellow,hl+:yellow' \
+            --bind='tab:down,shift-tab:up'
+    )
+
+    [[ -z "$selection" ]] && return
+
+    local topic parts
+    topic=$(awk '{print $2}' <<< "$selection")
+    IFS='/' read -ra parts <<< "$topic"
+    docker "${parts[@]}" --help
+}
+
+# Interactive git command browser — fuzzy searches all ~150 git commands
+# (porcelain and plumbing) by parsing the GIT COMMANDS section of `man git`,
+# so it always matches your installed git version. Named 'gdoc' since 'git'
+# itself obviously can't be shadowed.
+gdoc() {
+    local selection
+    selection=$(
+        python3 - <<'PYEOF' |
+import re
+import subprocess
+
+proc = subprocess.run(["man", "git"], capture_output=True, text=True)
+if not proc.stdout:
+    raise SystemExit("man git produced no output")
+raw = subprocess.run(["col", "-b"], input=proc.stdout, capture_output=True, text=True).stdout
+lines = raw.splitlines()
+
+start = next(i for i, l in enumerate(lines) if l.strip() == "GIT COMMANDS")
+end = next(i for i, l in enumerate(lines) if l.strip() == "CONFIGURATION MECHANISM")
+
+category = None
+entries = []
+i = start
+while i < end:
+    line = lines[i]
+    if line.strip() == "":
+        i += 1
+        continue
+    indent = len(line) - len(line.lstrip(" "))
+    text = line.strip()
+    if indent == 3:
+        category = text
+        i += 1
+        continue
+    m = re.match(r"^git-([\w.-]+)\(1\)$", text) if indent == 7 else None
+    if m:
+        name = m.group(1)
+        desc_lines = []
+        j = i + 1
+        while j < end and lines[j].strip() != "":
+            desc_lines.append(lines[j].strip())
+            j += 1
+        entries.append((name, category, " ".join(desc_lines)))
+        i = j
+        continue
+    i += 1
+
+entries.sort(key=lambda e: e[0])
+for name, cat, desc in entries:
+    print(f"{'command':<10} {name:<20} ({cat}) {desc}")
+PYEOF
+        fzf --height=90% --reverse \
+            --prompt='git doc > ' \
+            --header='command  (category in parens)' \
+            --tiebreak=begin \
+            --color='hl:yellow,hl+:yellow' \
+            --bind='tab:down,shift-tab:up'
+    )
+
+    [[ -z "$selection" ]] && return
+
+    local topic
+    topic=$(awk '{print $2}' <<< "$selection")
+    git help "$topic"
+}
+
+# Interactive uv (Python package manager) CLI browser — fuzzy searches every
+# uv command and subcommand (add, sync, pip install, tool install, python
+# pin, ...) by recursively parsing `uv ... --help`, live from your installed
+# uv, up to 3 levels deep. Named 'uvdoc' so it doesn't shadow the real 'uv'.
+uvdoc() {
+    local selection
+    selection=$(
+        python3 - <<'PYEOF' |
+import re
+import subprocess
+
+MAX_DEPTH = 3
+
+
+def get_help(path):
+    proc = subprocess.run(["uv", *path, "--help"], capture_output=True, text=True, timeout=5)
+    return proc.stdout
+
+
+def parse_commands(text):
+    entries = []
+    capturing = False
+    for line in text.splitlines():
+        if line == "Commands:":
+            capturing = True
+            continue
+        if not capturing:
+            continue
+        if line.strip() == "":
+            break
+        m = re.match(r"^ {2}(\S+)\s{2,}(.*)$", line)
+        if m:
+            entries.append((m.group(1), m.group(2).strip()))
+    return entries
+
+
+def walk(path, depth, seen, out, desc=""):
+    if depth > MAX_DEPTH:
+        return
+    key = tuple(path)
+    if key in seen:
+        return
+    seen.add(key)
+
+    entries = parse_commands(get_help(path))
+    if path:
+        kind = "group" if entries else "command"
+        out.append((kind, "/".join(path), desc))
+    for name, sdesc in entries:
+        walk(path + [name], depth + 1, seen, out, sdesc)
+
+
+out = []
+walk([], 0, set(), out)
+out.sort(key=lambda e: e[1])
+for kind, topic, desc in out:
+    print(f"{kind:<10} {topic:<20} {desc}")
+PYEOF
+        fzf --height=90% --reverse \
+            --prompt='uv doc > ' \
+            --header='group · command  (path segments joined by /)' \
+            --tiebreak=begin \
+            --color='hl:yellow,hl+:yellow' \
+            --bind='tab:down,shift-tab:up'
+    )
+
+    [[ -z "$selection" ]] && return
+
+    local topic parts
+    topic=$(awk '{print $2}' <<< "$selection")
+    IFS='/' read -ra parts <<< "$topic"
+    uv "${parts[@]}" --help
 }
 
 

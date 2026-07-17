@@ -1,4 +1,4 @@
-workspace_dir = "leetcode-solutions"
+workspace_dir = "~/Documents/leetcode-solutions"
 language = "python3"
 editor = "nvim"
 solutions_repo_url = "https://github.com/Feeco-Li/leetcode-solutions.git"

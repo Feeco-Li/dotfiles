@@ -41,6 +41,14 @@
       "Bash(jest:*)",
       "Bash(go test:*)",
       "Bash(go build:*)",
+      "WebSearch",
+      "WebFetch",
+      "Read",
+      "Grep",
+      "Glob",
+      "LS",
+      "LSP",
+      "ListMcpResourcesTool",     
       "Bash(go run:*)"
     ]
   },
@@ -49,10 +57,11 @@
     "command": "~/.claude/statusline.sh",
     "padding": 0
   },
+  "tui": "fullscreen",
   "voice": {
     "enabled": false
   },
   "theme": "dark",
   "voiceEnabled": false,
-  "tui": "fullscreen"
+  "skipDangerousModePermissionPrompt": true
 }

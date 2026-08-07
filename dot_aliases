@@ -1592,7 +1592,90 @@ load() {
 }
 
 function updatedotfiles {
-    chezmoi re-add
+    local CYAN='\033[1;36m'
+    local GREEN='\033[1;32m'
+    local RED='\033[1;31m'
+    local YELLOW='\033[1;33m'
+    local MAGENTA='\033[1;35m'
+    local BLUE='\033[1;34m'
+    local DIM='\033[2m'
+    local NC='\033[0m'
+    local BAR="════════════════════════════════════════════════════════════════════════════"
+
+    local out status
+    out=$(chezmoi re-add 2>&1)
+    status=$?
+
+    echo -e "\n${DIM}╔${BAR}╗${NC}"
+
+    if [[ $status -ne 0 ]]; then
+        echo -e "${DIM}║${NC}  ${MAGENTA}dotfiles${NC} ${DIM}│${NC} ${RED}✗ sync failed${NC}"
+        echo -e "${DIM}╠${BAR}╣${NC}"
+        while IFS= read -r line; do
+            echo -e "${DIM}║${NC}  ${RED}${line}${NC}"
+        done <<< "$out"
+        echo -e "${DIM}╚${BAR}╝${NC}\n"
+        return $status
+    fi
+
+    if [[ -z "$out" ]]; then
+        echo -e "${DIM}║${NC}  ${MAGENTA}dotfiles${NC} ${DIM}│${NC} ${GREEN}up to date${NC}"
+        echo -e "${DIM}╚${BAR}╝${NC}\n"
+        return 0
+    fi
+
+    local commit_line branch commit_hash commit_msg
+    commit_line=$(grep -m1 -oP '^\[\S+ [0-9a-f]+\] .*' <<< "$out")
+
+    if [[ -z "$commit_line" ]]; then
+        echo -e "${DIM}║${NC}  ${MAGENTA}dotfiles${NC} ${DIM}│${NC} ${YELLOW}synced (unrecognized output)${NC}"
+        echo -e "${DIM}╠${BAR}╣${NC}"
+        while IFS= read -r line; do
+            echo -e "${DIM}║${NC}  ${line}"
+        done <<< "$out"
+        echo -e "${DIM}╚${BAR}╝${NC}\n"
+        return 0
+    fi
+
+    branch=$(sed -E 's/^\[([^ ]+) .*/\1/' <<< "$commit_line")
+    commit_hash=$(sed -E 's/^\[[^ ]+ ([0-9a-f]+)\].*/\1/' <<< "$commit_line")
+    commit_msg=$(sed -E 's/^\[[^]]+\] //' <<< "$commit_line")
+
+    echo -e "${DIM}║${NC}  ${MAGENTA}dotfiles${NC} ${DIM}│${NC} ${GREEN}synced${NC} ${DIM}to${NC} ${CYAN}${branch}${NC}"
+    echo -e "${DIM}╠${BAR}╣${NC}"
+
+    while IFS=' ' read -r verb path; do
+        [[ -z "$path" ]] && continue
+        case "$verb" in
+            Add)    echo -e "${DIM}║${NC}  ${GREEN}  added${NC}   $path" ;;
+            Remove) echo -e "${DIM}║${NC}  ${RED}  removed${NC} $path" ;;
+            *)      echo -e "${DIM}║${NC}  ${CYAN}  updated${NC} $path" ;;
+        esac
+    done < <(grep -oP '(Update|Add|Remove) \S+' <<< "$commit_msg")
+
+    local stat_line files_changed insertions deletions plural
+    stat_line=$(grep -m1 -E '^ [0-9]+ files? changed' <<< "$out")
+    files_changed=$(grep -oP '^\s*\K[0-9]+' <<< "$stat_line")
+    insertions=$(grep -oP '\d+(?= insertions?\(\+\))' <<< "$stat_line")
+    deletions=$(grep -oP '\d+(?= deletions?\(-\))' <<< "$stat_line")
+    plural="s"
+    [[ "${files_changed:-0}" == "1" ]] && plural=""
+
+    local push_dest push_line range local_b arrow remote_b old_sha new_sha
+    push_dest=$(grep -m1 -oP '^To \K\S+' <<< "$out" | sed -E 's#^https?://##; s#\.git$##')
+    push_line=$(grep -m1 -oP '[0-9a-f]+\.\.[0-9a-f]+\s+\S+ -> \S+' <<< "$out")
+    if [[ -n "$push_line" ]]; then
+        read -r range local_b arrow remote_b <<< "$push_line"
+        old_sha=${range%%..*}
+        new_sha=${range##*..}
+    fi
+
+    echo -e "${DIM}╠${BAR}╣${NC}"
+    echo -e "${DIM}║${NC}  ${YELLOW}commit${NC}  ${commit_hash}  ${GREEN}+${insertions:-0}${NC} ${RED}-${deletions:-0}${NC}  ${DIM}(${files_changed:-0} file${plural})${NC}"
+    if [[ -n "$push_dest" ]]; then
+        echo -e "${DIM}║${NC}  ${BLUE}pushed${NC}  ${DIM}${old_sha}..${NC}${new_sha:-$commit_hash} ${DIM}→${NC} ${push_dest} ${DIM}(${remote_b:-$branch})${NC}"
+    fi
+    echo -e "${DIM}╚${BAR}╝${NC}\n"
 }
 function syncdotfiles {
     cd ~/Desktop && chezmoi update

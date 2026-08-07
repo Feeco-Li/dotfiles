@@ -162,13 +162,6 @@ map({ "n", "i", "v" }, "<A-e>", "<Cmd>NvimTreeFocus<CR>", {
   silent = true,
 })
 
--- global: focus aerial document symbols
-map({ "n", "i", "v" }, "<A-d>", "<Cmd>AerialOpen<CR>", {
-  desc = "focus file explorer",
-  noremap = true,
-  silent = true,
-})
-
 -- show jump list
 map("n", "<A-;>", "<cmd>Telescope jumplist<CR>", { desc = "show jumplist" })
 

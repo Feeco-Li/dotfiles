@@ -3,6 +3,7 @@
   "permissions": {
     "allow": [
       "Bash(ls:*)",
+      "Bash(cd:*)",
       "Bash(pwd:*)",
       "Bash(which:*)",
       "Bash(cat:*)",

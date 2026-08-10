@@ -1196,6 +1196,19 @@ todoeditlabel() {
     rm -f "$tmpfile"
 }
 
+# todoclose <issue-number>: close an issue; extra args pass through to `gh issue close`
+# (e.g. todoclose 12 --comment "done" --reason completed)
+todoclose() {
+    local id="${1#\#}"
+    if [[ -z "$id" ]]; then
+        echo "usage: todoclose <issue-number>"
+        return 1
+    fi
+    shift
+
+    gh issue close "$id" "$@"
+}
+
 
 #=======================================================================
 #  TMUX - TERMINAL MULTIPLEXER

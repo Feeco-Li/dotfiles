@@ -699,9 +699,6 @@ pr() {
     gh pr create --fill
 }
 
-alias gittodolist='gh issue list'   # list open issues
-alias gittodo='gh issue create'     # create a new issue
-
 # ── GitHub auth & account switching ──────────────────────────────────
 alias githublogin='gh auth login'
 alias githubbrowser='gh browse'
@@ -978,7 +975,8 @@ _todo_relative_time() {
 }
 
 # todolist: fuzzy-browse issues with a live preview of the full body + metadata
-# (default: every state, up to 500); pass any `gh issue list` flags to override
+# (default: open issues only, up to 500); pass any `gh issue list` flags to override
+# (e.g. todolist --state all, or todolist --state closed)
 todolist() {
     if ! command -v fzf >/dev/null 2>&1; then
         echo "todolist needs fzf (not found on PATH)."
@@ -987,7 +985,7 @@ todolist() {
 
     local -a args
     if [[ $# -eq 0 ]]; then
-        args=(--state all --limit 500)
+        args=(--state open --limit 500)
     else
         args=("$@")
     fi

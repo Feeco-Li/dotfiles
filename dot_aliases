@@ -946,6 +946,248 @@ githubsearch() {
 }
 alias ghs='githubsearch'
 
+# ── Issues / todo tracking ────────────────────────────────────────────
+# todo: open $EDITOR to compose a new issue (line 1 = title, rest = body)
+alias todo='gh issue create --editor'
+
+# _todo_relative_time <seconds>: render a duration in seconds as GitHub-style relative time
+_todo_relative_time() {
+    local diff=$1
+    local mins=$(( diff / 60 ))
+    local hours=$(( diff / 3600 ))
+    local days=$(( diff / 86400 ))
+    local weeks=$(( diff / 604800 ))
+    local months=$(( diff / 2592000 ))
+    local years=$(( diff / 31536000 ))
+
+    if (( diff < 60 )); then
+        echo "just now"
+    elif (( mins < 60 )); then
+        echo "about ${mins} minute$([[ $mins -ne 1 ]] && echo s) ago"
+    elif (( hours < 24 )); then
+        echo "about ${hours} hour$([[ $hours -ne 1 ]] && echo s) ago"
+    elif (( days < 7 )); then
+        echo "${days} day$([[ $days -ne 1 ]] && echo s) ago"
+    elif (( weeks < 5 )); then
+        echo "${weeks} week$([[ $weeks -ne 1 ]] && echo s) ago"
+    elif (( months < 12 )); then
+        echo "${months} month$([[ $months -ne 1 ]] && echo s) ago"
+    else
+        echo "${years} year$([[ $years -ne 1 ]] && echo s) ago"
+    fi
+}
+
+# todolist: fuzzy-browse issues with a live preview of the full body + metadata
+# (default: every state, up to 500); pass any `gh issue list` flags to override
+todolist() {
+    if ! command -v fzf >/dev/null 2>&1; then
+        echo "todolist needs fzf (not found on PATH)."
+        return 1
+    fi
+
+    local -a args
+    if [[ $# -eq 0 ]]; then
+        args=(--state all --limit 500)
+    else
+        args=("$@")
+    fi
+
+    local raw
+    # Fields joined with \x1f (unit separator, not whitespace) rather than @tsv's
+    # real tab — bash's `read` collapses consecutive whitespace delimiters, which
+    # would silently shift every later field left whenever labels/etc. is empty.
+    raw=$(gh issue list "${args[@]}" \
+        --json number,title,state,labels,updatedAt \
+        -q '.[] | [(.number|tostring), .state, .title, ([.labels[].name] | join(",")), .updatedAt] | join("")') || return 1
+
+    if [[ -z "$raw" ]]; then
+        echo "No issues found."
+        return 0
+    fi
+
+    local GREEN='\033[1;32m' MAGENTA='\033[1;35m' DIM='\033[2m' NC='\033[0m'
+
+    # Build one fzf row per issue: <bare id>\t<colored, column-aligned display text>
+    # Field 1 (bare id) drives the preview safely; field 2 is all that's shown.
+    local lines
+    lines=$(echo "$raw" | while IFS=$'\x1f' read -r num state title labels updated; do
+        local color=$GREEN
+        [[ "$state" == "CLOSED" ]] && color=$MAGENTA
+        local state_p title_p labels_p rel
+        printf -v state_p '%-8s' "$state"
+        printf -v title_p '%-58s' "${title:0:58}"
+        printf -v labels_p '%-24s' "${labels:0:24}"
+        rel=$(date -d "$updated" '+%Y-%m-%d %H:%M' 2>/dev/null || echo "$updated")
+        printf '%s\t' "$num"
+        echo -e "#${num}  ${color}${state_p}${NC} ${title_p} ${DIM}${labels_p}${NC} ${rel}"
+    done)
+
+    local header
+    header=$(printf '%-7s %-8s %-58s %-24s %s' '#ID' 'STATE' 'TITLE' 'LABELS' 'UPDATED')
+
+    local selected
+    selected=$(printf '%s\n' "$lines" | fzf --ansi --layout=reverse \
+        --delimiter '\t' --with-nth=2 \
+        --header "$header" \
+        --preview 'gh issue view {1}' \
+        --preview-window 'right:55%:wrap' \
+        --bind 'tab:down,shift-tab:up')
+
+    [[ -z "$selected" ]] && return 0
+
+    local id
+    id=$(cut -f1 <<< "$selected")
+
+    local json
+    json=$(gh issue view "$id" --json title,number,state,author,createdAt,comments,labels,body,url) || return 1
+
+    local title number state author_login author_name created comment_count labels body url
+    title=$(jq -r '.title' <<< "$json")
+    number=$(jq -r '.number' <<< "$json")
+    state=$(jq -r '.state' <<< "$json")
+    author_login=$(jq -r '.author.login' <<< "$json")
+    author_name=$(jq -r '.author.name // empty' <<< "$json")
+    created=$(jq -r '.createdAt' <<< "$json")
+    comment_count=$(jq -r '.comments | length' <<< "$json")
+    labels=$(jq -r '[.labels[].name] | join(", ")' <<< "$json")
+    body=$(jq -r '.body' <<< "$json")
+    url=$(jq -r '.url' <<< "$json")
+
+    local repo state_disp author_disp opened_ago
+    repo="${url#https://github.com/}"
+    repo="${repo%/issues/*}"
+
+    case "$state" in
+        OPEN) state_disp="Open" ;;
+        CLOSED) state_disp="Closed" ;;
+        *) state_disp="$state" ;;
+    esac
+
+    if [[ -n "$author_name" ]]; then
+        author_disp="$author_login ($author_name)"
+    else
+        author_disp="$author_login"
+    fi
+
+    local now_epoch created_epoch diff
+    now_epoch=$(date +%s)
+    created_epoch=$(date -d "$created" +%s 2>/dev/null)
+    if [[ -n "$created_epoch" ]]; then
+        diff=$(( now_epoch - created_epoch ))
+        opened_ago=$(_todo_relative_time "$diff")
+    else
+        opened_ago="$created"
+    fi
+
+    echo ""
+    printf 'Title:    %s\n' "$title"
+    printf 'Repo:     %s#%s\n' "$repo" "$number"
+    printf 'State:    %s\n' "$state_disp"
+    printf 'Author:   %s\n' "$author_disp"
+    printf 'Opened:   %s\n' "$opened_ago"
+    printf 'Comments: %s\n' "$comment_count"
+    [[ -n "$labels" ]] && printf 'Labels:   %s\n' "$labels"
+    echo ""
+    printf '%s\n' "$body"
+    echo ""
+    printf 'URL: %s\n' "$url"
+}
+
+# todoedit <issue-number>: edit an issue's title/body in $EDITOR
+todoedit() {
+    local id="${1#\#}"
+    if [[ -z "$id" ]]; then
+        echo "usage: todoedit <issue-number>"
+        return 1
+    fi
+
+    local title body
+    title=$(gh issue view "$id" --json title -q .title) || return 1
+    body=$(gh issue view "$id" --json body -q .body)
+
+    local tmpfile
+    tmpfile=$(mktemp /tmp/gh-issue-edit-XXXXXX.md)
+    {
+        printf '%s\n\n%s\n' "$title" "$body"
+        echo "# ─────────────────────────────────────────"
+        echo "# Editing issue #$id."
+        echo "# Line 1 = title. Everything below the blank line = body."
+        echo "# Lines starting with # are ignored. Save & quit to update, empty title aborts."
+        echo "# ─────────────────────────────────────────"
+    } > "$tmpfile"
+
+    ${EDITOR:-vi} "$tmpfile"
+
+    local content new_title
+    content=$(grep -v '^#' "$tmpfile")
+    new_title=$(sed -n '1p' <<< "$content")
+    if [[ -z "$new_title" ]]; then
+        echo "Aborted: empty title."
+        rm -f "$tmpfile"
+        return 1
+    fi
+
+    local bodyfile
+    bodyfile=$(mktemp /tmp/gh-issue-edit-body-XXXXXX.md)
+    tail -n +2 <<< "$content" | sed '/./,$!d' > "$bodyfile"
+
+    gh issue edit "$id" --title "$new_title" --body-file "$bodyfile"
+    rm -f "$tmpfile" "$bodyfile"
+}
+
+# todoeditlabel <issue-number>: edit an issue's labels in $EDITOR (one label per line)
+todoeditlabel() {
+    local id="${1#\#}"
+    if [[ -z "$id" ]]; then
+        echo "usage: todoeditlabel <issue-number>"
+        return 1
+    fi
+
+    local current_labels repo_labels
+    current_labels=$(gh issue view "$id" --json labels -q '.labels[].name') || return 1
+    repo_labels=$(gh label list --json name -q '.[].name' 2>/dev/null)
+
+    local tmpfile
+    tmpfile=$(mktemp /tmp/gh-issue-labels-XXXXXX.md)
+    {
+        [[ -n "$current_labels" ]] && printf '%s\n' "$current_labels"
+        echo "# ─────────────────────────────────────────"
+        echo "# Editing labels for issue #$id. One label per line."
+        echo "# Lines starting with # are ignored."
+        echo "# Available labels in this repo:"
+        if [[ -n "$repo_labels" ]]; then
+            while IFS= read -r l; do
+                echo "#   $l"
+            done <<< "$repo_labels"
+        fi
+        echo "# ─────────────────────────────────────────"
+    } > "$tmpfile"
+
+    ${EDITOR:-vi} "$tmpfile"
+
+    local new_labels
+    new_labels=$(grep -v '^#' "$tmpfile" | sed '/^[[:space:]]*$/d')
+
+    local args=()
+    while IFS= read -r label; do
+        [[ -z "$label" ]] && continue
+        grep -qxF "$label" <<< "$current_labels" || args+=(--add-label "$label")
+    done <<< "$new_labels"
+
+    while IFS= read -r label; do
+        [[ -z "$label" ]] && continue
+        grep -qxF "$label" <<< "$new_labels" || args+=(--remove-label "$label")
+    done <<< "$current_labels"
+
+    if [[ ${#args[@]} -eq 0 ]]; then
+        echo "No label changes."
+    else
+        gh issue edit "$id" "${args[@]}"
+    fi
+
+    rm -f "$tmpfile"
+}
+
 
 #=======================================================================
 #  TMUX - TERMINAL MULTIPLEXER

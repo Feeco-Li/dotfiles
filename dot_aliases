@@ -1079,17 +1079,25 @@ todolist() {
         opened_ago="$created"
     fi
 
-    echo ""
-    printf 'Title:    %s\n' "$title"
-    printf 'Repo:     %s#%s\n' "$repo" "$number"
-    printf 'State:    %s\n' "$state_disp"
-    printf 'Author:   %s\n' "$author_disp"
-    printf 'Opened:   %s\n' "$opened_ago"
-    printf 'Comments: %s\n' "$comment_count"
-    [[ -n "$labels" ]] && printf 'Labels:   %s\n' "$labels"
-    echo ""
-    printf '%s\n' "$body"
-    echo ""
+    local CYAN='\033[1;36m'
+    local BAR="════════════════════════════════════════════════════════════════════════════"
+
+    local state_color=$GREEN
+    [[ "$state" == "CLOSED" ]] && state_color=$MAGENTA
+
+    echo -e "\n${DIM}╔${BAR}╗${NC}"
+    echo -e "${DIM}║${NC}  ${CYAN}Title:${NC}    ${title}"
+    echo -e "${DIM}║${NC}  ${CYAN}Repo:${NC}     ${repo}#${number}"
+    echo -e "${DIM}║${NC}  ${CYAN}State:${NC}    ${state_color}${state_disp}${NC}"
+    echo -e "${DIM}║${NC}  ${CYAN}Author:${NC}   ${author_disp}"
+    echo -e "${DIM}║${NC}  ${CYAN}Opened:${NC}   ${opened_ago}"
+    echo -e "${DIM}║${NC}  ${CYAN}Comments:${NC} ${comment_count}"
+    [[ -n "$labels" ]] && echo -e "${DIM}║${NC}  ${CYAN}Labels:${NC}   ${labels}"
+    echo -e "${DIM}╠${BAR}╣${NC}"
+    while IFS= read -r line; do
+        echo -e "${DIM}║${NC}  ${line}"
+    done <<< "$body"
+    echo -e "${DIM}╚${BAR}╝${NC}\n"
     printf 'URL: %s\n' "$url"
 }
 

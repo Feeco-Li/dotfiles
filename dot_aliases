@@ -1579,6 +1579,44 @@ musicplay() {
 }
 
 #=======================================================================
+#  YOUTUBE CONTENT PIPELINE (~/Documents/youtube project)
+#=======================================================================
+# Starts a new video's content folder for the youtube Remotion project:
+# creates content/<today's-date>-<slug>/ (slug derived from the given
+# file's name) and moves the file in as source.md, ready for Claude
+# Code's generate-video/ship-video skills to pick up.
+ytsource() {
+    if [ $# -eq 0 ]; then
+        echo "usage: ytsource <path-to-file>" >&2
+        return 1
+    fi
+
+    local src="$*"
+    if [ ! -f "$src" ]; then
+        echo "ytsource: no such file: $src" >&2
+        return 1
+    fi
+
+    local youtube_content="$HOME/Documents/youtube/content"
+    local base slug date dest_dir
+    base=$(basename "$src")
+    base="${base%.*}"
+    slug=$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')
+    date=$(date +%F)
+    dest_dir="$youtube_content/${date}-${slug}"
+
+    if [ -e "$dest_dir" ]; then
+        echo "ytsource: $dest_dir already exists" >&2
+        return 1
+    fi
+
+    mkdir -p "$dest_dir"
+    mv -- "$src" "$dest_dir/source.md"
+
+    echo "Created $dest_dir/source.md"
+}
+
+#=======================================================================
 #  DOTFILES MANAGEMENT
 #=======================================================================
 # Aliases for managing dotfiles and reloading shell configuration.

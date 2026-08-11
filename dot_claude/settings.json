@@ -43,6 +43,7 @@
       "Bash(jest:*)",
       "Bash(go test:*)",
       "Bash(go build:*)",
+      "Bash(for:*)",
       "WebSearch",
       "WebFetch",
       "Read",

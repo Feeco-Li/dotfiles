@@ -1844,8 +1844,12 @@ musicplay() {
 #=======================================================================
 # Starts a new video's content folder for the youtube Remotion project:
 # creates content/<today's-date>-<slug>/ (slug derived from the given
-# file's name) and moves the file in as source.md, ready for Claude
-# Code's generate-video/ship-video skills to pick up.
+# file's name) and moves the file in as source.md. Then cd's into the
+# repo and launches `claude --dangerously-skip-permissions -p` in the
+# background to run the ship-video skill fully unattended, end to end
+# (draft/render/upload-private/commit/push, no approval prompts). Log
+# for that background run goes to out/ship-video-<date>-<slug>.log
+# (out/ is git-ignored, so it never gets swept into the video's commit).
 ytsource() {
     if [ $# -eq 0 ]; then
         echo "usage: ytsource <path-to-file>" >&2
@@ -1858,7 +1862,8 @@ ytsource() {
         return 1
     fi
 
-    local youtube_content="$HOME/Documents/youtube/content"
+    local repo="$HOME/Documents/youtube"
+    local youtube_content="$repo/content"
     local base slug date dest_dir
     base=$(basename "$src")
     base="${base%.*}"
@@ -1875,6 +1880,19 @@ ytsource() {
     mv -- "$src" "$dest_dir/source.md"
 
     echo "Created $dest_dir/source.md"
+
+    cd "$repo" || return 1
+
+    mkdir -p "$repo/out"
+    local log="$repo/out/ship-video-${date}-${slug}.log"
+
+    nohup claude --dangerously-skip-permissions -p \
+        "Run the ship-video skill with no argument to ship every pending content folder to YouTube." \
+        >"$log" 2>&1 &
+    disown
+
+    echo "ship-video launched in background (pid $!, unattended, no approval prompts)"
+    echo "log: $log"
 }
 
 #=======================================================================

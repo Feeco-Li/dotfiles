@@ -1886,7 +1886,8 @@ ytsource() {
     mkdir -p "$repo/out"
     local log="$repo/out/ship-video-${date}-${slug}.log"
 
-    nohup claude --dangerously-skip-permissions -p \
+    nohup env CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000 \
+        claude --dangerously-skip-permissions -p \
         "Run the ship-video skill with no argument to ship every pending content folder to YouTube." \
         >"$log" 2>&1 &
     disown

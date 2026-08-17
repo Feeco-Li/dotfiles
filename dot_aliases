@@ -1850,7 +1850,7 @@ musicplay() {
 # (draft/render/upload-private/commit/push, no approval prompts). Log
 # for that background run goes to out/ship-video-<date>-<slug>.log
 # (out/ is git-ignored, so it never gets swept into the video's commit).
-ytsource() {
+add() {
     if [ $# -eq 0 ]; then
         echo "usage: ytsource <path-to-file>" >&2
         return 1
@@ -1886,8 +1886,7 @@ ytsource() {
     mkdir -p "$repo/out"
     local log="$repo/out/ship-video-${date}-${slug}.log"
 
-    nohup env CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000 \
-        claude --dangerously-skip-permissions -p \
+    nohup claude --dangerously-skip-permissions -p \
         "Run the ship-video skill with no argument to ship every pending content folder to YouTube." \
         >"$log" 2>&1 &
     disown

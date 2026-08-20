@@ -51,7 +51,7 @@
       "Glob",
       "LS",
       "LSP",
-      "ListMcpResourcesTool",     
+      "ListMcpResourcesTool",
       "Bash(go run:*)"
     ]
   },
@@ -62,9 +62,10 @@
   },
   "tui": "fullscreen",
   "voice": {
-    "enabled": false
+    "enabled": true,
+    "mode": "hold"
   },
+  "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "voiceEnabled": false,
-  "skipDangerousModePermissionPrompt": true
+  "voiceEnabled": true
 }

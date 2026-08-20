@@ -29,7 +29,7 @@ Neovim options (UI, performance, etc.).
 ## 6. `lua/plugins/`
 Plugin-specific configs:
 
-- **`aerial.lua`** – Code outline plugin.  
+- **`outline.lua`** – Code outline plugin.  
 - **`luasnip.lua`** – `LuaSnip` plugin config.  
 - **`init.lua`** – Loads all plugin configs.  
 - Other language/tool plugins: `python-tool.lua`, `render-markdown.lua`, `typescrip-tool.lua`, `ty-python.lua`.

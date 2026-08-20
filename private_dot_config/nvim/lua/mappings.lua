@@ -96,8 +96,20 @@ map({ "n", "i", "v" }, "<A-I>", vim.lsp.buf.definition, { desc = "find definatio
 map({ "n", "i", "v" }, "<A-K>", "<C-o>", { desc = "go to last position" })
 -- Open forward file
 map({ "n", "i", "v" }, "<A-J>", "<C-i>", { desc = "go to forward position" })
--- Telescope list document symbols
-map({ "n", "i", "v" }, "<A-d>", "<cmd>Telescope lsp_document_symbols<CR>", { desc = "list symbols in a file" })
+-- Outline: focus symbols/outline sidebar (opens it first if closed).
+-- Width is re-asserted here because outline.nvim only sets it once at window
+-- creation, and it can get squeezed by unrelated layout changes (e.g. nvim-tree).
+map({ "n", "i", "v" }, "<A-d>", function()
+  require("outline").open_outline { focus_outline = true }
+  vim.schedule(function()
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      if vim.bo[buf].filetype == "Outline" then
+        vim.api.nvim_win_set_width(win, 30)
+      end
+    end
+  end)
+end, { desc = "focus symbols outline sidebar" })
 -- Telescope Find Occurrence
 map({ "n", "i", "v" }, "<C-f>", "<cmd>Telescope live_grep<CR>", { desc = "search a text globally inside a project" })
 

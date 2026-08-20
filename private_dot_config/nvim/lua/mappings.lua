@@ -185,14 +185,15 @@ map("n", "<leader><Space>", function()
   end
 end, { desc = "open diagnostics or LSP hover" })
 
--- Esc closes any floating window
+-- Esc closes any floating window and clears search highlight
 map("n", "<Esc>", function()
+  vim.cmd "nohlsearch"
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if vim.api.nvim_win_get_config(win).relative ~= "" then
       pcall(vim.api.nvim_win_close, win, true)
     end
   end
-end, { desc = "close floating windows" })
+end, { desc = "close floating windows, clear search highlight" })
 
 -- Jump between diagnostics
 vim.keymap.del("n", "]d")

@@ -1,17 +1,8 @@
 [[conn]]
-name = "testdb"
-user = "devuser"
-password = "devpass"
+name = "forevermore-web-backend"
+user = "loco"
+password = "loco"
 host = "localhost"
 port = 5432
-database = "devdb"
-type = "postgres" # Corrected name
-
-[[conn]]
-name = "full-stack-fastapi-template"
-user = "postgres"
-password = "changethis"
-host = "localhost"
-port = 5432
-database = "app"
+database = "forevermore-legacy-web-backend_development"
 type = "postgres"

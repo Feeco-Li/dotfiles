@@ -3,6 +3,9 @@
 ## Git Commits
 - Never add `Co-Authored-By` trailers to commit messages.
 
+## Closing GitHub Issues
+- Whenever closing a GitHub issue, the closing comment must be a detailed runbook: decisions made and their rationale, the exact step order taken, gotchas/pitfalls discovered, and a reusable checklist — written so the issue can be replayed on a fresh project with minimal back-and-forth or re-discussion.
+
 ## Python LSP
 - The user has `ty` (astral-sh/ty) installed at `~/.local/bin/ty` as their Python language server.
 - Do not prompt to install Pyright, pylsp, or any other Python LSP.

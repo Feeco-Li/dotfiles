@@ -1865,15 +1865,29 @@ musicplay() {
 # `claude --bg` never exits on its own once the task is done -- it goes
 # idle waiting for more input instead, so a small background watcher
 # (plain bash, not another claude process, so it isn't subject to the
-# same bug) polls `claude agents --json` and `claude stop`s the session
-# once it goes idle, so finished runs don't pile up as resident
-# processes. `stop` (not `rm`) keeps the conversation on disk --
-# `claude attach <id>` reopens it if you want to see what happened;
-# `claude rm <id>` deletes it for good once you're done with it.
+# same bug) -- ~/.local/bin/claude-bg-watch.sh -- polls `claude agents
+# --json` and `claude stop`s the session once it goes idle, so finished
+# runs don't pile up as resident processes. `stop` (not `rm`) keeps the
+# conversation on disk -- `claude attach <id>` reopens it if you want to
+# see what happened; `claude rm <id>` deletes it for good once you're
+# done with it.
+#
+# `claude --bg` also runs the session in an auto-created git worktree
+# under .claude/worktrees/ instead of the repo directory itself
+# (Claude Code's tengu_worktree_mode) -- discovered the hard way when a
+# finished run's commit landed on origin/worktree-ship-video-batch
+# instead of origin/main and had to be merged in by hand. Once the
+# watcher stops the session, it fast-forward merges that worktree's
+# branch into the repo's checked-out branch and pushes -- only
+# auto-clearing an untracked-file collision (e.g. the source.md this
+# function moved in before launching) when it's byte-identical to what
+# the merge would write; any real conflict is left untouched for a
+# human, never force-resolved.
 #
 # Refuses to launch a second run while one is already active in this
-# repo, since concurrent ship-video runs race on out/, the YouTube
-# OAuth token cache, and git.
+# repo -- checked via `claude agents --json`, matching either the repo
+# path itself or any of its auto-created worktrees -- since concurrent
+# ship-video runs race on out/, the YouTube OAuth token cache, and git.
 add() {
     if [ $# -eq 0 ]; then
         echo "usage: add <path-to-file>" >&2
@@ -1905,12 +1919,16 @@ add() {
     local running
     running=$(claude agents --json 2>/dev/null | python3 -c "
 import json, sys
+repo = '$repo'
+wt_prefix = repo + '/.claude/worktrees/'
 try:
     agents = json.load(sys.stdin)
 except Exception:
     sys.exit(0)
 for a in agents:
-    if a.get('cwd') == '$repo' and a.get('kind') == 'background' and a.get('status') != 'idle':
+    cwd = a.get('cwd', '')
+    in_repo = cwd == repo or cwd.startswith(wt_prefix)
+    if in_repo and a.get('kind') == 'background' and a.get('status') != 'idle':
         print(a.get('id', ''))
 ")
     if [ -n "$running" ]; then
@@ -1940,37 +1958,124 @@ for a in agents:
     local watch_log="$repo/out/ship-video-${date}-${slug}.log"
     local watch_script
     watch_script=$(mktemp)
-    cat >"$watch_script" <<EOF
+    cat >"$watch_script" <<'WATCHER_EOF'
 #!/usr/bin/env bash
+# Waits for a `claude --bg` session to go idle, stops it, then -- if it ran
+# in an auto-created git worktree (Claude Code's tengu_worktree_mode)
+# instead of directly in the target repo -- fast-forward merges that
+# worktree's branch back into the repo's checked-out branch and pushes.
+# Generated fresh by the `add` function in ~/.aliases for each run; self-
+# deletes when done. Args: <id> <repo-path> <log-file>
+set -u
+
+id="$1"
+repo="$2"
+log="$3"
+
+log_line() {
+    echo "$(date -Iseconds) $*" >>"$log"
+}
+
+# Poll until the session goes idle (finished, waiting for more input) or
+# disappears from the active list (exited/removed some other way).
 while true; do
-    status=\$(claude agents --json 2>/dev/null | python3 -c "
+    info=$(claude agents --json 2>/dev/null | python3 -c "
 import json, sys
 try:
     agents = json.load(sys.stdin)
 except Exception:
     sys.exit(1)
 for a in agents:
-    if a.get('id') == '$id':
+    if a.get('id') == sys.argv[1]:
         print(a.get('status', ''))
+        print(a.get('cwd', ''))
         sys.exit(0)
 sys.exit(1)
-")
-    rc=\$?
-    if [ \$rc -ne 0 ]; then
-        echo "\$(date -Iseconds) session $id no longer listed (exited or removed elsewhere)" >> "$watch_log"
-        break
+" "$id" 2>/dev/null)
+    rc=$?
+    if [ $rc -ne 0 ]; then
+        log_line "session $id no longer listed (exited or removed elsewhere) -- nothing to merge"
+        rm -f "$0"
+        exit 0
     fi
-    if [ "\$status" = "idle" ]; then
-        echo "\$(date -Iseconds) session $id finished -- stopping (conversation kept; claude attach $id to reopen)" >> "$watch_log"
-        claude stop "$id" >> "$watch_log" 2>&1
-        break
-    fi
+    status=$(printf '%s\n' "$info" | sed -n '1p')
+    session_cwd=$(printf '%s\n' "$info" | sed -n '2p')
+    [ "$status" = "idle" ] && break
     sleep 30
 done
-rm -f "$watch_script"
-EOF
+
+log_line "session $id finished -- stopping (conversation kept; claude attach $id to reopen)"
+claude stop "$id" >>"$log" 2>&1
+
+if [ -z "$session_cwd" ] || [ "$session_cwd" = "$repo" ]; then
+    log_line "session ran directly in $repo -- no worktree merge needed"
+    rm -f "$0"
+    exit 0
+fi
+
+if [ ! -d "$session_cwd" ]; then
+    log_line "session worktree $session_cwd no longer exists -- skipping merge"
+    rm -f "$0"
+    exit 0
+fi
+
+branch=$(git -C "$session_cwd" branch --show-current 2>/dev/null)
+if [ -z "$branch" ]; then
+    log_line "could not determine a branch for worktree $session_cwd -- skipping merge"
+    rm -f "$0"
+    exit 0
+fi
+
+log_line "session ran in worktree $session_cwd on branch $branch -- attempting fast-forward merge into $repo"
+
+merge_output=$(git -C "$repo" merge --ff-only "$branch" 2>&1)
+merge_rc=$?
+
+# A finished run's commit can include a file that already exists untracked in
+# the main checkout (e.g. the source.md the launcher moved in before the
+# background session started) -- git refuses to merge over it. Only clear it
+# out of the way when it's byte-identical to what the merge would write;
+# otherwise leave everything untouched and surface it for a human.
+if [ $merge_rc -ne 0 ] && printf '%s\n' "$merge_output" | grep -q "untracked working tree files would be overwritten"; then
+    collisions=$(printf '%s\n' "$merge_output" | grep -P '^\t' | sed 's/^\t//')
+    all_identical=true
+    [ -z "$collisions" ] && all_identical=false
+    while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        if ! git -C "$repo" show "$branch:$f" 2>/dev/null | diff -q - "$repo/$f" >/dev/null 2>&1; then
+            all_identical=false
+        fi
+    done <<<"$collisions"
+    if [ "$all_identical" = true ]; then
+        log_line "clearing untracked file(s) identical to the incoming commit, then retrying merge: $(printf '%s' "$collisions" | tr '\n' ' ')"
+        while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            rm -f "$repo/$f"
+        done <<<"$collisions"
+        merge_output=$(git -C "$repo" merge --ff-only "$branch" 2>&1)
+        merge_rc=$?
+    else
+        log_line "untracked file collision has DIFFERING content -- not auto-resolving, leaving for manual merge. git said: $merge_output"
+    fi
+fi
+
+if [ $merge_rc -eq 0 ]; then
+    current_branch=$(git -C "$repo" branch --show-current)
+    log_line "merged $branch into $current_branch -- pushing"
+    push_output=$(git -C "$repo" push origin HEAD 2>&1)
+    if [ $? -eq 0 ]; then
+        log_line "pushed $current_branch successfully"
+    else
+        log_line "merge succeeded but push FAILED (left committed locally, retry manually): $push_output"
+    fi
+else
+    log_line "could not fast-forward merge $branch into $repo -- left for manual resolution. git said: $merge_output"
+fi
+
+rm -f "$0"
+WATCHER_EOF
     chmod +x "$watch_script"
-    nohup "$watch_script" >>"$watch_log" 2>&1 &
+    nohup "$watch_script" "$id" "$repo" "$watch_log" >>"$watch_log" 2>&1 &
     disown
 
     echo "ship-video launched in background (session $id, unattended, no approval prompts)"

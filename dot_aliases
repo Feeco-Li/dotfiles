@@ -1845,20 +1845,44 @@ musicplay() {
 # Starts a new video's content folder for the youtube Remotion project:
 # creates content/<today's-date>-<slug>/ (slug derived from the given
 # file's name) and moves the file in as source.md. Then cd's into the
-# repo and launches `claude --dangerously-skip-permissions -p` in the
-# background to run the ship-video skill fully unattended, end to end
-# (draft/render/upload-private/commit/push, no approval prompts). Log
-# for that background run goes to out/ship-video-<date>-<slug>.log
-# (out/ is git-ignored, so it never gets swept into the video's commit).
+# repo and launches `claude --bg --dangerously-skip-permissions` to run
+# the ship-video skill fully unattended, end to end (draft/render/
+# upload-private/commit/push, no approval prompts).
+#
+# Deliberately NOT `claude -p` (print/one-shot mode): ship-video's long
+# steps (generate-audio.py, remotion render) can run past the Bash
+# tool's default foreground timeout, which silently moves them to the
+# background. An interactive-style session stays alive and gets a
+# notification when that finishes; a `-p` process has already exited by
+# then and the backgrounded step dies with it -- this is what caused
+# three separate stalled runs (partial/corrupt audio, pipeline stuck).
+# `claude --bg` is a real non-print session (same engine as interactive)
+# that runs headless and keeps going, so it can actually receive that
+# notification and finish the job. Verified directly: a `--bg` session
+# given a command that sleeps past the default timeout still completed
+# it, where `-p` would have killed it.
+#
+# `claude --bg` never exits on its own once the task is done -- it goes
+# idle waiting for more input instead, so a small background watcher
+# (plain bash, not another claude process, so it isn't subject to the
+# same bug) polls `claude agents --json` and `claude stop`s the session
+# once it goes idle, so finished runs don't pile up as resident
+# processes. `stop` (not `rm`) keeps the conversation on disk --
+# `claude attach <id>` reopens it if you want to see what happened;
+# `claude rm <id>` deletes it for good once you're done with it.
+#
+# Refuses to launch a second run while one is already active in this
+# repo, since concurrent ship-video runs race on out/, the YouTube
+# OAuth token cache, and git.
 add() {
     if [ $# -eq 0 ]; then
-        echo "usage: ytsource <path-to-file>" >&2
+        echo "usage: add <path-to-file>" >&2
         return 1
     fi
 
     local src="$*"
     if [ ! -f "$src" ]; then
-        echo "ytsource: no such file: $src" >&2
+        echo "add: no such file: $src" >&2
         return 1
     fi
 
@@ -1872,27 +1896,87 @@ add() {
     dest_dir="$youtube_content/${date}-${slug}"
 
     if [ -e "$dest_dir" ]; then
-        echo "ytsource: $dest_dir already exists" >&2
+        echo "add: $dest_dir already exists" >&2
+        return 1
+    fi
+
+    mkdir -p "$repo/out"
+
+    local running
+    running=$(claude agents --json 2>/dev/null | python3 -c "
+import json, sys
+try:
+    agents = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+for a in agents:
+    if a.get('cwd') == '$repo' and a.get('kind') == 'background' and a.get('status') != 'idle':
+        print(a.get('id', ''))
+")
+    if [ -n "$running" ]; then
+        echo "add: a ship-video session is already running in $repo (id $running)" >&2
+        echo "     wait for it, or run: claude stop $running" >&2
         return 1
     fi
 
     mkdir -p "$dest_dir"
     mv -- "$src" "$dest_dir/source.md"
-
     echo "Created $dest_dir/source.md"
 
     cd "$repo" || return 1
 
-    mkdir -p "$repo/out"
-    local log="$repo/out/ship-video-${date}-${slug}.log"
+    local name="ship-${date}-${slug}"
+    local bg_out id
+    bg_out=$(claude --bg --dangerously-skip-permissions -n "$name" \
+        "Run the ship-video skill with no argument to ship every pending content folder to YouTube." 2>&1)
+    id=$(printf '%s\n' "$bg_out" | grep -m1 '^backgrounded' | grep -oE '[0-9a-f]{6,}' | head -n1)
 
-    nohup claude --dangerously-skip-permissions -p \
-        "Run the ship-video skill with no argument to ship every pending content folder to YouTube." \
-        >"$log" 2>&1 &
+    if [ -z "$id" ]; then
+        echo "add: couldn't launch ship-video -- claude --bg said:" >&2
+        printf '%s\n' "$bg_out" >&2
+        return 1
+    fi
+
+    local watch_log="$repo/out/ship-video-${date}-${slug}.log"
+    local watch_script
+    watch_script=$(mktemp)
+    cat >"$watch_script" <<EOF
+#!/usr/bin/env bash
+while true; do
+    status=\$(claude agents --json 2>/dev/null | python3 -c "
+import json, sys
+try:
+    agents = json.load(sys.stdin)
+except Exception:
+    sys.exit(1)
+for a in agents:
+    if a.get('id') == '$id':
+        print(a.get('status', ''))
+        sys.exit(0)
+sys.exit(1)
+")
+    rc=\$?
+    if [ \$rc -ne 0 ]; then
+        echo "\$(date -Iseconds) session $id no longer listed (exited or removed elsewhere)" >> "$watch_log"
+        break
+    fi
+    if [ "\$status" = "idle" ]; then
+        echo "\$(date -Iseconds) session $id finished -- stopping (conversation kept; claude attach $id to reopen)" >> "$watch_log"
+        claude stop "$id" >> "$watch_log" 2>&1
+        break
+    fi
+    sleep 30
+done
+rm -f "$watch_script"
+EOF
+    chmod +x "$watch_script"
+    nohup "$watch_script" >>"$watch_log" 2>&1 &
     disown
 
-    echo "ship-video launched in background (pid $!, unattended, no approval prompts)"
-    echo "log: $log"
+    echo "ship-video launched in background (session $id, unattended, no approval prompts)"
+    echo "logs:    claude logs $id       (or: tail -f $watch_log)"
+    echo "attach:  claude attach $id"
+    echo "stop:    claude stop $id"
 }
 
 #=======================================================================

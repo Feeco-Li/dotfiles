@@ -12,7 +12,7 @@ print_header() {
     echo "##############################################"
     echo "$1"
     echo "##############################################"
-
+}
 
 # Function to check if a command exists
 command_exists() {

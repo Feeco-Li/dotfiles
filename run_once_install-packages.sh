@@ -12,7 +12,7 @@ print_header() {
     echo "##############################################"
     echo "$1"
     echo "##############################################"
-}
+
 
 # Function to check if a command exists
 command_exists() {
@@ -308,9 +308,8 @@ print_header "Editors (nano/vim/neovim)"
 sudo apt remove -y nano 2>/dev/null || true
 sudo apt remove -y vim-gtk3 2>/dev/null || true
 # install_apt vim
-install_snap nvim
-install_snap yazi
 install_apt ripgrep
+install_snap nvim
 install_npm_global prettier
 install_npm_global typescript
 
@@ -389,6 +388,7 @@ install_cargo cargo-make
 install_cargo cargo-lambda
 install_cargo cargo-audit
 install_cargo rusty-man
+install_cargo yazi-build
 
 # Claude code Installation for Debian
 print_header "Claude Code"

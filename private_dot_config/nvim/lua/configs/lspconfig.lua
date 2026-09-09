@@ -1,4 +1,3 @@
-
 local servers = {
   html = {},
   awk_ls = {},

@@ -6,3 +6,12 @@ host = "localhost"
 port = 5432
 database = "forevermore-legacy-web-backend_development"
 type = "postgres"
+
+[[conn]]
+name = "forevermore-web-backend-test"
+user = "loco"
+password = "loco"
+host = "localhost"
+port = 5432
+database = "forevermore-legacy-web-backend_test"
+type = "postgres"

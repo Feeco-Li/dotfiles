@@ -3,28 +3,28 @@ sort_by = "natural"
 
 [opener]
 text = [
-    { run = 'nvim "$@"', block = true, for = "unix" },
+    { run = 'nvim %s', block = true, for = "unix" },
 ]
 video = [
-    { run = 'mpv "$@"', orphan = true, for = "unix" },
+    { run = 'mpv %s', orphan = true, for = "unix" },
 ]
 audio = [
-    { run = 'mpv --no-video "$@"', block = true, for = "unix" },
+    { run = 'mpv --no-video %s', block = true, for = "unix" },
 ]
 image = [
-    { run = 'vimiv "$@"', orphan = true, for = "unix" },
+    { run = 'vimiv %s', orphan = true, for = "unix" },
 ]
 pdf = [
-    { run = 'zathura "$@"', orphan = true, for = "unix" },
+    { run = 'zathura %s', orphan = true, for = "unix" },
 ]
 csv = [
-    { run = '/home/feeco/.cargo/bin/csvlens "$@"', block = true, for = "unix" },
+    { run = '/home/feeco/.cargo/bin/csvlens %s', block = true, for = "unix" },
 ]
 docx = [
-    { run = '/home/feeco/.cargo/bin/doxx "$@"', block = true, for = "unix" },
+    { run = '/home/feeco/.cargo/bin/doxx %s', block = true, for = "unix" },
 ]
 xlsx = [
-    { run = '/home/feeco/.cargo/bin/tw "$@"', block = true, for = "unix" },
+    { run = '/home/feeco/.cargo/bin/tw %s', block = true, for = "unix" },
 ]
 
 [open]

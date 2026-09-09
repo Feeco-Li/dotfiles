@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tmux list-sessions:*)",
+      "Bash(tmux new-window:*)",
+      "Bash(tmux capture-pane:*)",
+      "Bash(tmux:*)",
+      "Bash(yazi:*)",
+      "WebFetch(domain:yazi-rs.github.io)"
+    ]
+  }
+}

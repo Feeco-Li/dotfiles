@@ -174,6 +174,11 @@ map({ "n", "i", "v" }, "<A-e>", "<Cmd>NvimTreeFocus<CR>", {
   silent = true,
 })
 
+-- window nav: same as <C-h>/<C-l>, for testing whether Alt+punctuation
+-- reaches Neovim through this terminal/tmux setup
+map("n", "<A-;>", "<C-w>h", { desc = "switch window left" })
+map("n", "<A-'>", "<C-w>l", { desc = "switch window right" })
+
 -- Hover: open diagnostics/LSP hover with Space Space
 map("n", "<leader><Space>", function()
   -- If already in a float, close it and return to source buffer

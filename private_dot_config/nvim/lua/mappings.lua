@@ -174,9 +174,6 @@ map({ "n", "i", "v" }, "<A-e>", "<Cmd>NvimTreeFocus<CR>", {
   silent = true,
 })
 
--- cycle focus between windows
-map("n", "<A-;>", "<C-w>w", { desc = "cycle to next window" })
-
 -- Hover: open diagnostics/LSP hover with Space Space
 map("n", "<leader><Space>", function()
   -- If already in a float, close it and return to source buffer

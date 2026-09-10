@@ -26,6 +26,18 @@ vim.api.nvim_create_autocmd("VimEnter", {
 -- clipboard
 vim.opt.clipboard = "unnamedplus"
 
+-- Cursorline only in the focused window, so it doubles as a focus indicator
+vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
+  callback = function()
+    vim.wo.cursorline = true
+  end,
+})
+vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
+  callback = function()
+    vim.wo.cursorline = false
+  end,
+})
+
 
 -- Diagnostic underline style: use double underline for better visibility
 local function set_diagnostic_highlights()

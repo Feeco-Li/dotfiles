@@ -21,6 +21,10 @@ M.base46 = {
   },
 }
 
+M.term = {
+  sizes = { sp = 0.5 },
+}
+
 M.ui = {
   theme = "ayu_dark",
   statusline = {

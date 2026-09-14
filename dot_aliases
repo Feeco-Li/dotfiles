@@ -1844,60 +1844,47 @@ musicplay() {
 #=======================================================================
 # Starts a new video's content folder for the youtube Remotion project:
 # creates content/<today's-date>-<slug>/ (slug derived from the given
-# file's name) and moves the file in as source.md. Then cd's into the
-# repo and launches `claude --bg --dangerously-skip-permissions` to run
-# the ship-video skill fully unattended, end to end (draft/render/
-# upload-private/commit/push, no approval prompts).
+# file's name) and moves the file in as source.md. Then launches an
+# interactive `claude --dangerously-skip-permissions` session, right in
+# this terminal, with the ship-video prompt already sent as its first
+# turn, so it runs the skill start to finish (draft/render/upload-
+# private/commit/push) with no permission prompts in the way.
 #
-# Deliberately NOT `claude -p` (print/one-shot mode): ship-video's long
-# steps (generate-audio.py, remotion render) can run past the Bash
-# tool's default foreground timeout, which silently moves them to the
-# background. An interactive-style session stays alive and gets a
-# notification when that finishes; a `-p` process has already exited by
-# then and the backgrounded step dies with it -- this is what caused
-# three separate stalled runs (partial/corrupt audio, pipeline stuck).
-# `claude --bg` is a real non-print session (same engine as interactive)
-# that runs headless and keeps going, so it can actually receive that
-# notification and finish the job. Verified directly: a `--bg` session
-# given a command that sleeps past the default timeout still completed
-# it, where `-p` would have killed it.
+# Deliberately interactive, not backgrounded -- this went through two
+# earlier designs, both of which stalled in production:
+#   1. `claude -p` (print/one-shot mode): long steps (generate-audio.py,
+#      remotion render) can run past the Bash tool's default foreground
+#      timeout, which silently backgrounds them -- and a `-p` process
+#      has already exited by the time such a step finishes, killing it
+#      mid-flight. Caused repeated stalled runs (partial/corrupt audio,
+#      pipeline stuck).
+#   2. `claude --bg` (headless background session): fixed the above
+#      (verified: it survives a step that runs past the timeout, where
+#      `-p` didn't), but introduced its own failures -- a run went idle
+#      within seconds of launch having written nothing at all (2026-09-
+#      12), and separately a backgrounded render got killed once the
+#      model's turn ended mid-run (2026-08-17). Both looked identical to
+#      a real finish to the watcher script polling `claude agents
+#      --json`, so failures went unnoticed until checked on by hand.
+# A plain interactive session sidesteps both failure classes at once: it
+# isn't a print-mode process that exits once the model stops emitting
+# turns, and it isn't torn down just because the model goes idle -- so
+# neither the render-gets-killed-on-idle bug nor the went-idle-doing-
+# nothing bug has anywhere to bite. The real tradeoff, accepted
+# deliberately: you have to actually be at this terminal for it to run.
+# None of Claude Code's background-agent tooling (`claude agents`/
+# `attach`/`stop`, or a separate watcher process) applies to a plain
+# interactive session, because there's no headless process to
+# supervise -- you are the one watching it, the same way you'd notice
+# and just tell it "continue" if it ever stalls.
 #
-# `claude --bg` never exits on its own once the task is done -- it goes
-# idle waiting for more input instead, so a small background watcher
-# (plain bash, not another claude process, so it isn't subject to the
-# same bug) -- ~/.local/bin/claude-bg-watch.sh -- polls `claude agents
-# --json` and `claude stop`s the session once it goes idle, so finished
-# runs don't pile up as resident processes. `stop` (not `rm`) keeps the
-# conversation on disk -- `claude attach <id>` reopens it if you want to
-# see what happened; `claude rm <id>` deletes it for good once you're
-# done with it.
+# Runs directly in the repo (no worktree, no merge-back needed -- that
+# was purely a `--bg` quirk from Claude Code's tengu_worktree_mode).
 #
-# `claude --bg` also runs the session in an auto-created git worktree
-# under .claude/worktrees/ instead of the repo directory itself
-# (Claude Code's tengu_worktree_mode) -- discovered the hard way when a
-# finished run's commit landed on origin/worktree-ship-video-batch
-# instead of origin/main and had to be merged in by hand. Once the
-# watcher stops the session, it fast-forward merges that worktree's
-# branch into the repo's checked-out branch and pushes -- only
-# auto-clearing an untracked-file collision (e.g. the source.md this
-# function moved in before launching) when it's byte-identical to what
-# the merge would write; any real conflict is left untouched for a
-# human, never force-resolved.
-#
-# Refuses to launch a second run while one is already active in this
-# repo -- checked via `claude agents --json`, matching either the repo
-# path itself or any of its auto-created worktrees -- since concurrent
-# ship-video runs race on out/, the YouTube OAuth token cache, and git.
-#
-# The watcher also verifies the run actually shipped -- a session going
-# idle is not proof of a finished pipeline. Observed 2026-09-12: a run
-# went idle within seconds of launch having written nothing at all, and
-# the old watcher logged it as "finished" identically to a real success.
-# Now it checks for the folder's youtube-upload.json before declaring
-# victory; if idle without one, it does NOT relaunch anything itself --
-# it fires a desktop notification and leaves the session idle rather
-# than stopping it, so it can be finished by hand with `claude attach
-# <id>`, same as this repo's usual fallback.
+# A light lock file (out/.ship-video.lock, holding the owning shell's
+# PID) guards against two overlapping `add` runs racing on out/, the
+# YouTube OAuth token cache, and git -- cleared automatically if the
+# shell that made it is gone, or by hand with `rm` otherwise.
 add() {
     if [ $# -eq 0 ]; then
         echo "usage: add <path-to-file>" >&2
@@ -1925,205 +1912,28 @@ add() {
     fi
 
     mkdir -p "$repo/out"
-
-    local running
-    running=$(claude agents --json 2>/dev/null | python3 -c "
-import json, sys
-repo = '$repo'
-wt_prefix = repo + '/.claude/worktrees/'
-try:
-    agents = json.load(sys.stdin)
-except Exception:
-    sys.exit(0)
-for a in agents:
-    cwd = a.get('cwd', '')
-    in_repo = cwd == repo or cwd.startswith(wt_prefix)
-    if in_repo and a.get('kind') == 'background' and a.get('status') != 'idle':
-        print(a.get('id', ''))
-")
-    if [ -n "$running" ]; then
-        echo "add: a ship-video session is already running in $repo (id $running)" >&2
-        echo "     wait for it, or run: claude stop $running" >&2
-        return 1
+    local lock="$repo/out/.ship-video.lock"
+    if [ -e "$lock" ]; then
+        local lock_pid
+        lock_pid=$(cat "$lock" 2>/dev/null)
+        if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
+            echo "add: a ship-video session looks like it's already running in $repo (shell pid $lock_pid)" >&2
+            echo "     wait for it to finish, or if you're sure it's gone: rm $lock" >&2
+            return 1
+        fi
+        echo "add: stale lock at $lock (owning shell is gone) -- clearing it" >&2
+        rm -f "$lock"
     fi
+    echo $$ >"$lock"
 
     mkdir -p "$dest_dir"
     mv -- "$src" "$dest_dir/source.md"
     echo "Created $dest_dir/source.md"
 
-    cd "$repo" || return 1
+    ( cd "$repo" && claude --dangerously-skip-permissions \
+        "Run the ship-video skill with no argument to ship every pending content folder to YouTube." )
 
-    local name="ship-${date}-${slug}"
-    local bg_out id
-    bg_out=$(claude --bg --dangerously-skip-permissions -n "$name" \
-        "Run the ship-video skill with no argument to ship every pending content folder to YouTube." 2>&1)
-    id=$(printf '%s\n' "$bg_out" | grep -m1 '^backgrounded' | grep -oE '[0-9a-f]{6,}' | head -n1)
-
-    if [ -z "$id" ]; then
-        echo "add: couldn't launch ship-video -- claude --bg said:" >&2
-        printf '%s\n' "$bg_out" >&2
-        return 1
-    fi
-
-    local watch_log="$repo/out/ship-video-${date}-${slug}.log"
-    local watch_script
-    watch_script=$(mktemp)
-    cat >"$watch_script" <<'WATCHER_EOF'
-#!/usr/bin/env bash
-# Waits for a `claude --bg` session to go idle, then verifies it actually
-# shipped the folder `add` created (a youtube-upload.json receipt under
-# it) before treating the run as done -- idle is not the same as
-# finished. A session can go idle having done nothing at all (observed
-# 2026-09-12: stalled within seconds, zero files written) or after a
-# partial crash, and the old version of this script logged both cases
-# identically to a real finish.
-#
-# On idle-without-receipt this does NOT relaunch anything on its own --
-# deliberately: an earlier draft had it auto-resume itself with
-# `claude --bg --resume ... --dangerously-skip-permissions`, and that's
-# an unsupervised agent-respawn capability worth a human staying in the
-# loop for, not a background script. Instead it notifies (desktop
-# notification) and leaves the session alive & idle so it can be picked
-# up with `claude attach <id>` and finished by hand.
-#
-# Once shipped, stops the session, then -- if it ran in an auto-created
-# git worktree (Claude Code's tengu_worktree_mode) instead of directly
-# in the target repo -- fast-forward merges that worktree's branch back
-# into the repo's checked-out branch and pushes.
-# Generated fresh by the `add` function in ~/.aliases for each run; self-
-# deletes when done. Args: <id> <repo-path> <log-file> <dest-dir>
-set -u
-
-id="$1"
-repo="$2"
-log="$3"
-dest_dir="$4"
-rel_dest_dir="${dest_dir#$repo/}"
-
-log_line() {
-    echo "$(date -Iseconds) $*" >>"$log"
-}
-
-# Poll until the session goes idle (finished, waiting for more input) or
-# disappears from the active list (exited/removed some other way).
-vanished=false
-while true; do
-    info=$(claude agents --json 2>/dev/null | python3 -c "
-import json, sys
-try:
-    agents = json.load(sys.stdin)
-except Exception:
-    sys.exit(1)
-for a in agents:
-    if a.get('id') == sys.argv[1]:
-        print(a.get('status', ''))
-        print(a.get('cwd', ''))
-        sys.exit(0)
-sys.exit(1)
-" "$id" 2>/dev/null)
-    rc=$?
-    if [ $rc -ne 0 ]; then
-        log_line "session $id no longer listed (exited or removed elsewhere) -- nothing to merge"
-        vanished=true
-        break
-    fi
-    status=$(printf '%s\n' "$info" | sed -n '1p')
-    session_cwd=$(printf '%s\n' "$info" | sed -n '2p')
-    [ "$status" = "idle" ] && break
-    sleep 30
-done
-
-if [ "$vanished" = true ]; then
-    rm -f "$0"
-    exit 0
-fi
-
-receipt="$session_cwd/$rel_dest_dir/youtube-upload.json"
-if [ ! -f "$receipt" ]; then
-    log_line "session $id went idle without shipping $rel_dest_dir (no youtube-upload.json) -- leaving session idle for manual attach (claude attach $id)"
-    command -v notify-send >/dev/null 2>&1 && notify-send -u critical "ship-video stalled" "$rel_dest_dir did not finish. Run: claude attach $id" 2>/dev/null
-    rm -f "$0"
-    exit 1
-fi
-
-log_line "session $id: $rel_dest_dir shipped (youtube-upload.json present) -- stopping"
-claude stop "$id" >>"$log" 2>&1
-
-if [ -z "$session_cwd" ] || [ "$session_cwd" = "$repo" ]; then
-    log_line "session ran directly in $repo -- no worktree merge needed"
-    rm -f "$0"
-    exit 0
-fi
-
-if [ ! -d "$session_cwd" ]; then
-    log_line "session worktree $session_cwd no longer exists -- skipping merge"
-    rm -f "$0"
-    exit 0
-fi
-
-branch=$(git -C "$session_cwd" branch --show-current 2>/dev/null)
-if [ -z "$branch" ]; then
-    log_line "could not determine a branch for worktree $session_cwd -- skipping merge"
-    rm -f "$0"
-    exit 0
-fi
-
-log_line "session ran in worktree $session_cwd on branch $branch -- attempting fast-forward merge into $repo"
-
-merge_output=$(git -C "$repo" merge --ff-only "$branch" 2>&1)
-merge_rc=$?
-
-# A finished run's commit can include a file that already exists untracked in
-# the main checkout (e.g. the source.md the launcher moved in before the
-# background session started) -- git refuses to merge over it. Only clear it
-# out of the way when it's byte-identical to what the merge would write;
-# otherwise leave everything untouched and surface it for a human.
-if [ $merge_rc -ne 0 ] && printf '%s\n' "$merge_output" | grep -q "untracked working tree files would be overwritten"; then
-    collisions=$(printf '%s\n' "$merge_output" | grep -P '^\t' | sed 's/^\t//')
-    all_identical=true
-    [ -z "$collisions" ] && all_identical=false
-    while IFS= read -r f; do
-        [ -z "$f" ] && continue
-        if ! git -C "$repo" show "$branch:$f" 2>/dev/null | diff -q - "$repo/$f" >/dev/null 2>&1; then
-            all_identical=false
-        fi
-    done <<<"$collisions"
-    if [ "$all_identical" = true ]; then
-        log_line "clearing untracked file(s) identical to the incoming commit, then retrying merge: $(printf '%s' "$collisions" | tr '\n' ' ')"
-        while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            rm -f "$repo/$f"
-        done <<<"$collisions"
-        merge_output=$(git -C "$repo" merge --ff-only "$branch" 2>&1)
-        merge_rc=$?
-    else
-        log_line "untracked file collision has DIFFERING content -- not auto-resolving, leaving for manual merge. git said: $merge_output"
-    fi
-fi
-
-if [ $merge_rc -eq 0 ]; then
-    current_branch=$(git -C "$repo" branch --show-current)
-    log_line "merged $branch into $current_branch -- pushing"
-    push_output=$(git -C "$repo" push origin HEAD 2>&1)
-    if [ $? -eq 0 ]; then
-        log_line "pushed $current_branch successfully"
-    else
-        log_line "merge succeeded but push FAILED (left committed locally, retry manually): $push_output"
-    fi
-else
-    log_line "could not fast-forward merge $branch into $repo -- left for manual resolution. git said: $merge_output"
-fi
-
-rm -f "$0"
-WATCHER_EOF
-    chmod +x "$watch_script"
-    nohup "$watch_script" "$id" "$repo" "$watch_log" "$dest_dir" >>"$watch_log" 2>&1 &
-    disown
-
-    echo "ship-video launched in background (session $id, unattended, no approval prompts)"
-    echo "logs:    claude logs $id       (or: tail -f $watch_log)"
-    echo "attach:  claude attach $id"
-    echo "stop:    claude stop $id"
+    rm -f "$lock"
 }
 
 #=======================================================================

@@ -1888,6 +1888,16 @@ musicplay() {
 # repo -- checked via `claude agents --json`, matching either the repo
 # path itself or any of its auto-created worktrees -- since concurrent
 # ship-video runs race on out/, the YouTube OAuth token cache, and git.
+#
+# The watcher also verifies the run actually shipped -- a session going
+# idle is not proof of a finished pipeline. Observed 2026-09-12: a run
+# went idle within seconds of launch having written nothing at all, and
+# the old watcher logged it as "finished" identically to a real success.
+# Now it checks for the folder's youtube-upload.json before declaring
+# victory; if idle without one, it does NOT relaunch anything itself --
+# it fires a desktop notification and leaves the session idle rather
+# than stopping it, so it can be finished by hand with `claude attach
+# <id>`, same as this repo's usual fallback.
 add() {
     if [ $# -eq 0 ]; then
         echo "usage: add <path-to-file>" >&2
@@ -1960,17 +1970,35 @@ for a in agents:
     watch_script=$(mktemp)
     cat >"$watch_script" <<'WATCHER_EOF'
 #!/usr/bin/env bash
-# Waits for a `claude --bg` session to go idle, stops it, then -- if it ran
-# in an auto-created git worktree (Claude Code's tengu_worktree_mode)
-# instead of directly in the target repo -- fast-forward merges that
-# worktree's branch back into the repo's checked-out branch and pushes.
+# Waits for a `claude --bg` session to go idle, then verifies it actually
+# shipped the folder `add` created (a youtube-upload.json receipt under
+# it) before treating the run as done -- idle is not the same as
+# finished. A session can go idle having done nothing at all (observed
+# 2026-09-12: stalled within seconds, zero files written) or after a
+# partial crash, and the old version of this script logged both cases
+# identically to a real finish.
+#
+# On idle-without-receipt this does NOT relaunch anything on its own --
+# deliberately: an earlier draft had it auto-resume itself with
+# `claude --bg --resume ... --dangerously-skip-permissions`, and that's
+# an unsupervised agent-respawn capability worth a human staying in the
+# loop for, not a background script. Instead it notifies (desktop
+# notification) and leaves the session alive & idle so it can be picked
+# up with `claude attach <id>` and finished by hand.
+#
+# Once shipped, stops the session, then -- if it ran in an auto-created
+# git worktree (Claude Code's tengu_worktree_mode) instead of directly
+# in the target repo -- fast-forward merges that worktree's branch back
+# into the repo's checked-out branch and pushes.
 # Generated fresh by the `add` function in ~/.aliases for each run; self-
-# deletes when done. Args: <id> <repo-path> <log-file>
+# deletes when done. Args: <id> <repo-path> <log-file> <dest-dir>
 set -u
 
 id="$1"
 repo="$2"
 log="$3"
+dest_dir="$4"
+rel_dest_dir="${dest_dir#$repo/}"
 
 log_line() {
     echo "$(date -Iseconds) $*" >>"$log"
@@ -1978,6 +2006,7 @@ log_line() {
 
 # Poll until the session goes idle (finished, waiting for more input) or
 # disappears from the active list (exited/removed some other way).
+vanished=false
 while true; do
     info=$(claude agents --json 2>/dev/null | python3 -c "
 import json, sys
@@ -1995,8 +2024,8 @@ sys.exit(1)
     rc=$?
     if [ $rc -ne 0 ]; then
         log_line "session $id no longer listed (exited or removed elsewhere) -- nothing to merge"
-        rm -f "$0"
-        exit 0
+        vanished=true
+        break
     fi
     status=$(printf '%s\n' "$info" | sed -n '1p')
     session_cwd=$(printf '%s\n' "$info" | sed -n '2p')
@@ -2004,7 +2033,20 @@ sys.exit(1)
     sleep 30
 done
 
-log_line "session $id finished -- stopping (conversation kept; claude attach $id to reopen)"
+if [ "$vanished" = true ]; then
+    rm -f "$0"
+    exit 0
+fi
+
+receipt="$session_cwd/$rel_dest_dir/youtube-upload.json"
+if [ ! -f "$receipt" ]; then
+    log_line "session $id went idle without shipping $rel_dest_dir (no youtube-upload.json) -- leaving session idle for manual attach (claude attach $id)"
+    command -v notify-send >/dev/null 2>&1 && notify-send -u critical "ship-video stalled" "$rel_dest_dir did not finish. Run: claude attach $id" 2>/dev/null
+    rm -f "$0"
+    exit 1
+fi
+
+log_line "session $id: $rel_dest_dir shipped (youtube-upload.json present) -- stopping"
 claude stop "$id" >>"$log" 2>&1
 
 if [ -z "$session_cwd" ] || [ "$session_cwd" = "$repo" ]; then
@@ -2075,7 +2117,7 @@ fi
 rm -f "$0"
 WATCHER_EOF
     chmod +x "$watch_script"
-    nohup "$watch_script" "$id" "$repo" "$watch_log" >>"$watch_log" 2>&1 &
+    nohup "$watch_script" "$id" "$repo" "$watch_log" "$dest_dir" >>"$watch_log" 2>&1 &
     disown
 
     echo "ship-video launched in background (session $id, unattended, no approval prompts)"

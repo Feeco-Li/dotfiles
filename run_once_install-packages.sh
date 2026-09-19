@@ -86,6 +86,16 @@ install_uv() {
     fi
 }
 
+# Function to upgrade all Python tools installed via uv
+upgrade_uv_tools() {
+    if command_exists uv; then
+        echo -e "${YELLOW}→${NC} Upgrading all uv tools..."
+        uv tool upgrade --all
+    else
+        echo -e "${YELLOW}!${NC} uv is not installed, skipping upgrade"
+    fi
+}
+
 # Function to install npm global package if not installed
 install_npm_global() {
     local package=$1
@@ -114,6 +124,7 @@ system_update() {
     sudo apt-get update -y
     sudo apt-get upgrade -y
     sudo snap refresh --hold # stop snap store updates
+    upgrade_uv_tools
 }
 
 # Function to install a .deb package from URL
@@ -367,7 +378,7 @@ install_uv frogmouth
 if command_exists cargo; then
     echo -e "${GREEN}✓${NC} cargo is already installed"
 else
-    echo -e "${YELLOW}→${NC} Installing uv..."
+    echo -e "${YELLOW}→${NC} Installing cargo..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     # check installation status
     rustc --version

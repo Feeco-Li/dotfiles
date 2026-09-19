@@ -459,14 +459,15 @@ function updateall(){
 	sudo apt-get upgrade;
 	sudo apt update;
 	sudo apt-get update;
-    updateChrome;
-    sudo snap refresh;
+  updateChrome;
+  sudo snap refresh;
 	sudo apt-get clean;
 	sudo apt clean;
 	sudo apt autoremove;
 	sudo apt-get autoremove;
 	sudo apt-get autoclean;
 	sudo apt autoclean;
+  uv tool upgrade --all;
 }
 
 function clean(){

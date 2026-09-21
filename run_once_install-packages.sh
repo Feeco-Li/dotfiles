@@ -384,7 +384,7 @@ else
     rustc --version
     cargo --version
     # add LSP/formatter/Linter/Type Checker
-    rustup component add rust-analyzer rustfmt clippy
+    rustup component add rust-analyzer rustfmt clippy rust-src
 fi
 
 # Install cargo packages

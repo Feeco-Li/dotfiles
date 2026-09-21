@@ -398,7 +398,6 @@ install_cargo cargo-update
 install_cargo cargo-make
 install_cargo cargo-lambda
 install_cargo cargo-audit
-install_cargo cargo-nextest
 install_cargo yazi-build
 
 # Claude code Installation for Debian

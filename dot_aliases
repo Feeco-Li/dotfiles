@@ -183,7 +183,7 @@ repos() {
 alias desktop='cd /home/feeco/Desktop && yazi'
 alias video='cd /home/feeco/Videos && yazi'
 alias picture='cd /home/feeco/Pictures && yazi'
-alias music='cd /home/feeco/Music && yazi'
+alias music='ytfzf -m '
 
 
 

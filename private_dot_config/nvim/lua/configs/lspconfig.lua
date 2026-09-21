@@ -11,6 +11,9 @@ local servers = {
           command = "clippy",
           extraArgs = { "--", "-A", "clippy::all" },
         },
+        procMacro = {
+          attributes = { enable = true },
+        },
       },
     },
   },

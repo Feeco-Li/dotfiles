@@ -468,6 +468,7 @@ function updateall(){
 	sudo apt-get autoclean;
 	sudo apt autoclean;
   uv tool upgrade --all;
+  rustup update;
 }
 
 function clean(){

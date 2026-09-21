@@ -469,6 +469,7 @@ function updateall(){
 	sudo apt autoclean;
   uv tool upgrade --all;
   rustup update;
+  cargo install-update -a
 }
 
 function clean(){

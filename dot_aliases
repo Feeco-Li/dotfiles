@@ -1290,7 +1290,39 @@ function updatePrismaSchema(){
  npx prisma generate
 }
 
-# Interactive rustup doc browser — fuzzy searches all ~2000 topics from local docs.
+# _rust_method_index <docs-dir>: print one "method  std::path::Type::name<TAB>page#anchor"
+# line per std method. Methods have no HTML page of their own (they are anchors inside
+# their type's page), so they are scraped from the pages and cached; the cache is
+# rebuilt whenever the docs are newer than it (i.e. after `rustup update`).
+# Trait-impl methods (class="method trait-impl": clone, fmt, borrow, ...) are skipped —
+# they repeat on nearly every type and would drown out the real hits.
+_rust_method_index() {
+    local docs="$1"
+    local cache="${XDG_CACHE_HOME:-$HOME/.cache}/rust-doc-methods${docs//\//_}"
+    if [[ ! -s "$cache" || "$docs/std/index.html" -nt "$cache" ]]; then
+        mkdir -p "${cache%/*}"
+        ( cd "$docs/std" && LC_ALL=C grep -roE --include='*.html' \
+              '<section id="(ty)?method\.[A-Za-z0-9_-]+" class="method( deprecated)?"' ) \
+            | awk '{
+                sep=index($0, ":<section")
+                path=substr($0, 1, sep-1)
+                match($0, /id="[^"]+"/)
+                id=substr($0, RSTART+4, RLENGTH-5)
+                name=id; sub(/^(ty)?method\./, "", name); sub(/-[0-9]+$/, "", name)
+                n=split(path, parts, "/")
+                file=parts[n]; sub(/\.html$/, "", file)
+                owner=substr(file, index(file, ".")+1)
+                if(n==1) { topic=owner }
+                else { mod=parts[1]; for(i=2;i<n;i++) mod=mod"::"parts[i]; topic="std::"mod"::"owner }
+                topic=topic"::"name
+                if(!seen[topic]++) printf "%-10s %s\t%s#%s\n", "method", topic, path, id
+            }' > "$cache.tmp" && mv "$cache.tmp" "$cache"
+    fi
+    cat "$cache"
+}
+
+# Interactive rustup doc browser — fuzzy searches all std topics (~2000 pages plus
+# ~7500 methods such as std::iter::Iterator::collect) from local docs.
 # Note: shadows the rustdoc compiler binary (rarely called directly; cargo doc wraps it).
 # Rename to e.g. 'rdoc' if you need the real rustdoc in your PATH.
 rust() {
@@ -1349,15 +1381,25 @@ rust() {
                         else { mod=$1; for(i=2;i<=n;i++) mod=mod"::"$i; topic="std::"mod"::"name }
                         printf "%-10s %s\n", kind, topic
                     }'
+
+                # Methods — carry a hidden <TAB>page#anchor field used to open them
+                _rust_method_index "$docs"
             } | sort -k2
 
         } | fzf --height=70% --reverse \
+                --delimiter='\t' --with-nth=1 \
                 --prompt='rustup doc > ' \
-                --header='struct · fn · type · trait · constant · macro · enum · keyword · primitive · derive · attr · union · module · book' \
+                --header='struct · fn · method · type · trait · constant · macro · enum · keyword · primitive · derive · attr · union · module · book' \
                 --bind='tab:down,shift-tab:up'
     )
 
     [[ -z "$selection" ]] && return
+
+    # Methods: rustup doc cannot resolve them, so open the page anchor directly
+    if [[ "$selection" == *$'\t'* ]]; then
+        xdg-open "file://$docs/std/${selection#*$'\t'}" >/dev/null 2>&1
+        return
+    fi
 
     local topic
     topic=$(awk '{print $NF}' <<< "$selection")

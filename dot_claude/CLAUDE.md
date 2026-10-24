@@ -2,6 +2,7 @@
 
 ## Git Commits
 - Never add `Co-Authored-By` trailers to commit messages.
+- Never run `git commit` or `git push` unless the user explicitly asks for it in that message — implementing/fixing something is not an implicit request to commit it. Leave changes staged/unstaged in the working tree and say so; wait for an explicit "commit and push" (or equivalent) before running either command.
 
 ## Closing GitHub Issues
 - Whenever closing a GitHub issue, the closing comment must be a detailed runbook: decisions made and their rationale, the exact step order taken, gotchas/pitfalls discovered, and a reusable checklist — written so the issue can be replayed on a fresh project with minimal back-and-forth or re-discussion.

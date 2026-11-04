@@ -252,22 +252,7 @@ lm() {
 #  NETWORKING
 #=======================================================================
 # Functions and aliases for managing Wi-Fi and inspecting network ports.
-alias wifilist='nmcli device wifi list'
-show_connected_wifi(){
-    nmcli connection show
-}
-
-delete_connected_wifi(){
-    read -r -p "Enter SSID: " ssid
-    nmcli connection delete "$ssid"
-}
-
-connect_wifi() {
-    read -r -p "Enter SSID: " ssid
-    read -r -s -p "Enter Password: " password
-    echo 
-    sudo nmcli device wifi connect "$ssid" password "$password"
-}
+alias wifi='wifitui'
 
 port() {
     local search_term="${1:-}"

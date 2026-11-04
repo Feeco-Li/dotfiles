@@ -399,6 +399,7 @@ install_cargo cargo-make
 install_cargo cargo-lambda
 install_cargo cargo-audit
 install_cargo yazi-build
+install_cargo wifitui
 
 # Claude code Installation for Debian
 print_header "Claude Code"

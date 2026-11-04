@@ -75,11 +75,10 @@
   },
   "tui": "fullscreen",
   "voice": {
-    "enabled": true,
+    "enabled": false,
     "mode": "hold"
   },
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "voiceEnabled": true,
   "agentPushNotifEnabled": true
 }

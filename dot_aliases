@@ -480,7 +480,7 @@ updateChrome(){
 # A comprehensive set of aliases and functions to streamline Git and GitHub usage.
 
 # ── Project shortcut ──────────────────────────────────────────────────
-alias lifeike='cd /home/feeco/Documents/feeco && gb && gs && yazi'
+alias lifeike='cd /home/feeco/Documents/feeco && gb && gs && pull && yazi'
 
 # ── Status & inspection ───────────────────────────────────────────────
 # gs: pretty working-tree status with staged/modified/untracked breakdown

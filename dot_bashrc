@@ -47,7 +47,3 @@ case ":$PATH:" in
 esac
 # pnpm end
 
-# Android SDK
-export ANDROID_HOME="$HOME/Android/Sdk"
-export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
-export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator"

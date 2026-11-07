@@ -400,6 +400,7 @@ install_cargo cargo-lambda
 install_cargo cargo-audit
 install_cargo yazi-build
 install_cargo wifitui
+install_cargo bookokrat
 
 # Claude code Installation for Debian
 print_header "Claude Code"

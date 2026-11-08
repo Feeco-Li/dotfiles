@@ -383,6 +383,7 @@ alias volume='alsamixer'
 #  FILE & TEXT MANIPULATION
 #=======================================================================
 # Aliases and functions for file conversion, extraction, and formatting.
+alias pdf="bookokrat "
 alias unrarall='for file in *.rar; do unrar e -p "$file"; done'
 alias unzipgarbled='unzip -O cp936 '
 alias convertallpdf='ls *.pdf | xargs -n1 pdftotext'

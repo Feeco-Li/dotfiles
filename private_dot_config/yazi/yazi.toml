@@ -15,7 +15,8 @@ image = [
     { run = 'vimiv %s', orphan = true, for = "unix" },
 ]
 pdf = [
-    { run = 'zathura %s', orphan = true, for = "unix" },
+    { run = '/home/feeco/.cargo/bin/bookokrat %s', block = true, desc = "bookokrat", for = "unix" },
+    { run = 'zathura %s', orphan = true, desc = "zathura", for = "unix" },
 ]
 csv = [
     { run = '/home/feeco/.cargo/bin/csvlens %s', block = true, for = "unix" },

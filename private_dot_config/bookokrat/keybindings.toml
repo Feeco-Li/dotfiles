@@ -13,3 +13,7 @@
 #
 # Groups `all`, `normal`, `popup` apply across multiple contexts.
 # Use "nop" as the action to disable a default binding.
+
+[all]
+"J" = "scroll_half_down"
+"K" = "scroll_half_up"

@@ -346,7 +346,6 @@ fi
 
 # PDF viewer
 print_header "PDF Viewer"
-install_apt zathura
 
 # Screenshot tool
 print_header "Screenshot Tool"

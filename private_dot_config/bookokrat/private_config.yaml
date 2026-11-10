@@ -3,7 +3,7 @@ theme: "Paper White"
 margin: 0
 transparent_background: false
 pdf_scale: 0.87038344
-pdf_pan_shift: 7
+pdf_pan_shift: 0
 pdf_render_mode: scroll
 pdf_show_link_underlines: false
 pdf_page_layout_mode: single

@@ -383,7 +383,19 @@ alias volume='alsamixer'
 #  FILE & TEXT MANIPULATION
 #=======================================================================
 # Aliases and functions for file conversion, extraction, and formatting.
-alias pdf="bookokrat "
+# pdf <file>: open in bookokrat inside a new tmux window named "reader".
+# Inside tmux -> new window in the current session; outside -> attach/create a "reader" session.
+function pdf(){
+	local cmd="bookokrat"
+	[ $# -gt 0 ] && cmd+=" $(printf '%q ' "$@")"
+	if [ -n "$TMUX" ]; then
+		tmux new-window -n reader -c "$PWD" "$cmd"
+	elif tmux has-session -t reader 2>/dev/null; then
+		tmux new-window -t reader: -n reader -c "$PWD" "$cmd" && tmux attach -t reader
+	else
+		tmux new-session -s reader -n reader -c "$PWD" "$cmd"
+	fi
+}
 alias unrarall='for file in *.rar; do unrar e -p "$file"; done'
 alias unzipgarbled='unzip -O cp936 '
 alias convertallpdf='ls *.pdf | xargs -n1 pdftotext'
